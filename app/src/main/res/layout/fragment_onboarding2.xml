@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingHorizontal="28dp"
+    tools:context=".FragmentOnBoarding2">
+    
+    <ImageView
+        android:id="@+id/iv_img"
+        android:layout_width="347dp"
+        android:layout_height="365dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="135dp"
+        android:contentDescription="onboarding_image_2"
+        android:src="@drawable/image_onboarding2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    
+    <TextView
+        android:id="@+id/text_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="55dp"
+        android:fontFamily="@font/fo_gilroy_extra_bold"
+        android:text="Deteksi Warna"
+        android:textSize="22sp"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_img" />
+    
+    <TextView
+        android:id="@+id/text_description"
+        style="@style/TextNormal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:fontFamily="@font/fo_nunito_sans_reguler"
+        android:text="Mengarahkan ponsel ke suatu benda dalam mendeteksi dan mengenali warna yang terdeteksi"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/text_header"
+        app:layout_constraintStart_toStartOf="@+id/text_header"
+        app:layout_constraintTop_toBottomOf="@+id/text_header" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

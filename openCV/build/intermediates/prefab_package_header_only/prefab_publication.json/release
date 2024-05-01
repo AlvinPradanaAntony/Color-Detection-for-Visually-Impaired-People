@@ -1,0 +1,17 @@
+{
+  "installationFolder": "F:\\Project_Mobile\\Kotlin\\Ml_Kit\\ColorDetection\\openCV\\build\\intermediates\\prefab_package\\release\\prefab",
+  "gradlePath": ":openCV",
+  "packageInfo": {
+    "packageName": "openCV",
+    "packageSchemaVersion": 2,
+    "packageDependencies": [],
+    "modules": [
+      {
+        "moduleName": "opencv_jni_shared",
+        "moduleHeaders": "F:\\Project_Mobile\\Kotlin\\Ml_Kit\\ColorDetection\\openCV\\native\\jni\\include",
+        "moduleExportLibraries": [],
+        "abis": []
+      }
+    ]
+  }
+}

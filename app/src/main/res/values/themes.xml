@@ -3,7 +3,19 @@
     <style name="Base.Theme.ColorDetection" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
     
     <style name="Theme.ColorDetection" parent="Base.Theme.ColorDetection" />
+    <style name="Theme.SplashScreen" parent="Theme.ColorDetection">
+        <item name="android:navigationBarColor">@color/white</item>
+    </style>
+    
+    <style name="TextHeader" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/black_text</item>
+    </style>
+    <style name="TextNormal" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/black_text_2</item>
+    </style>
 </resources>

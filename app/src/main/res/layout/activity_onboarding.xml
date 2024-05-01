@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".OnboardingActivity">
+    
+    <ImageView
+        android:id="@+id/pattern_splash"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:contentDescription="pattern_splash"
+        android:scaleType="centerCrop"
+        android:src="@drawable/pattern2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/slideViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    
+    <Button
+        android:id="@+id/skipButton"
+        android:textColor="@color/tail_blue2_600"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:layout_marginEnd="26dp"
+        android:backgroundTint="@color/tail_blue_100"
+        android:fontFamily="@font/fo_nunito_sans_semi_bold"
+        android:text="Lewati"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    
+    <LinearLayout
+        android:id="@+id/indicator_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="120dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/slideViewPager" />
+    
+    <com.devcode.colordetection.customView.CustomButton
+        android:id="@+id/button_navigation"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="235dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/style_button"
+        android:fontFamily="@font/fo_nunito_sans_bold"
+        android:text="Selanjutnya"
+        android:textAllCaps="false"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

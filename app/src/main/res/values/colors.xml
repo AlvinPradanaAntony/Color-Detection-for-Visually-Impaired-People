@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <color name="black_text">#3A3F4D</color>
+    <color name="black_text_2">#828282</color>
+    <color name="tail_blue_100">#e0f2fe</color>
+    <color name="tail_blue_500">#0E8CC3</color>
+    <color name="tail_blue2_600">#0376B4</color>
+    <color name="tail_purple">#565990</color>
+    <color name="tail_orange">#FFB441</color>
+    <color name="tail_green">#00BFA5</color>
+    <color name="tail_pink">#FA8392</color>
 </resources>
