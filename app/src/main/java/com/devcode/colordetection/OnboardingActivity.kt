@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Html
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.viewpager2.widget.ViewPager2
 import com.devcode.colordetection.databinding.ActivityOnboardingBinding
 
@@ -14,6 +15,7 @@ class OnboardingActivity : AppCompatActivity() {
     private lateinit var sectionsPagerAdapter: OnBoardingPagerAdapter
     private lateinit var indicators: Array<TextView?>
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityOnboardingBinding.inflate(layoutInflater)
         setContentView(binding.root)

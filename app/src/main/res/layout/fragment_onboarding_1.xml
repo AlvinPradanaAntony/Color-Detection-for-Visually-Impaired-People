@@ -39,12 +39,14 @@
     
     <ImageView
         android:id="@+id/iv_img"
-        android:layout_width="328dp"
-        android:layout_height="354dp"
+        android:layout_width="358dp"
+        android:layout_height="0dp"
         android:layout_gravity="center"
-        android:layout_marginTop="60dp"
+        android:layout_marginBottom="110dp"
+        app:layout_constraintHeight_percent="0.45"
         android:contentDescription="onboarding_image_1"
         android:src="@drawable/image_onboarding1"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/text_header"
         app:layout_constraintStart_toStartOf="@+id/text_header"
         app:layout_constraintTop_toBottomOf="@+id/text_description" />
