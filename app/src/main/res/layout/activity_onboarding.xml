@@ -25,7 +25,6 @@
     
     <Button
         android:id="@+id/skipButton"
-        android:textColor="@color/tail_blue2_600"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="45dp"
@@ -33,19 +32,26 @@
         android:backgroundTint="@color/tail_blue_100"
         android:fontFamily="@font/fo_nunito_sans_semi_bold"
         android:text="Lewati"
+        android:textColor="@color/tail_blue2_600"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     
-    <LinearLayout
-        android:id="@+id/indicator_layout"
+    <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+        android:id="@+id/dots_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="30dp"
+        app:dotsColor="@color/tail_blue_100"
+        app:dotsCornerRadius="8dp"
+        app:dotsSize="8dp"
+        app:dotsSpacing="4dp"
+        app:dotsWidthFactor="2.5"
         app:layout_constraintBottom_toTopOf="@+id/button_navigation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/slideViewPager" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:progressMode="false"
+        app:selectedDotColor="@color/tail_blue_500" />
     
     <com.devcode.colordetection.customView.CustomButton
         android:id="@+id/button_navigation"

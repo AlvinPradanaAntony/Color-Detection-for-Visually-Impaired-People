@@ -1,6 +1,7 @@
 package com.devcode.colordetection
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -19,12 +20,23 @@ class SplashScreen : AppCompatActivity() {
         setContentView(binding.root)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, OnboardingActivity::class.java))
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-            finish()
+            if (onBoardingFinished()) {
+                startActivity(Intent(this, MainActivity::class.java))
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                finish()
+            } else{
+                startActivity(Intent(this, OnboardingActivity::class.java))
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                finish()
+            }
         }, delaySplashScreen)
     }
     companion object{
         const val delaySplashScreen = 4200L
+    }
+
+    private fun onBoardingFinished(): Boolean{
+        val sharedPref = this@SplashScreen.getSharedPreferences("onBoarding", Context.MODE_PRIVATE)
+        return sharedPref.getBoolean("Finished", false)
     }
 }
