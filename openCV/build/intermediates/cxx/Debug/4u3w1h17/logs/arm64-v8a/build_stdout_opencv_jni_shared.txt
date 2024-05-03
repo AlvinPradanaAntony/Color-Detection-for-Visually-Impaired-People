@@ -1,0 +1,2 @@
+ninja: Entering directory `F:\Project_Mobile\Kotlin\Ml_Kit\ColorDetection\openCV\.cxx\Debug\4u3w1h17\arm64-v8a'
+ninja: no work to do.
