@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.devcode.colordetection.databinding.ActivityMainBinding
@@ -15,14 +16,14 @@ import org.opencv.android.OpenCVLoader
 import org.opencv.core.Mat
 import java.util.Collections
 
-class MainActivity : CameraActivity() {
+class MainActivity : CameraActivity()  {
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraBridgeViewBase: CameraBridgeViewBase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        getPermission()
+//        getPermission()
 
         val camera = binding.cameraView
         cameraBridgeViewBase = camera
