@@ -503,7 +503,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
 
                 if (mFpsMeter != null) {
                     mFpsMeter.measure();
-                    mFpsMeter.draw(canvas, 20, 30);
+                    mFpsMeter.draw(canvas, 60, 110);
                 }
                 getHolder().unlockCanvasAndPost(canvas);
             }
