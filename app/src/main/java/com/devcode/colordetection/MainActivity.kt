@@ -14,7 +14,7 @@ import org.opencv.android.OpenCVLoader
 import org.opencv.core.Mat
 import java.util.Collections
 
-class MainActivity : CameraActivity()  {
+class MainActivity : CameraActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraBridgeViewBase: CameraBridgeViewBase
     private lateinit var camera: JavaCameraView
@@ -28,7 +28,7 @@ class MainActivity : CameraActivity()  {
 
     }
 
-    private fun setupCamera(){
+    private fun setupCamera() {
         camera = binding.cameraView
         cameraBridgeViewBase = camera
         cameraBridgeViewBase.setCvCameraViewListener(object :
@@ -41,7 +41,9 @@ class MainActivity : CameraActivity()  {
                 return inputFrame.rgba()
             }
         })
-        val message = if (OpenCVLoader.initLocal()) { cameraBridgeViewBase.enableView(); "OpenCV loaded" } else "OpenCV not loaded"
+        val message = if (OpenCVLoader.initLocal()) {
+            cameraBridgeViewBase.enableView(); "OpenCV loaded"
+        } else "OpenCV not loaded"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
@@ -65,9 +67,13 @@ class MainActivity : CameraActivity()  {
     }
 
     private fun getPermission() {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, 101)
-            }
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, 101)
+        }
     }
 
     override fun onRequestPermissionsResult(
