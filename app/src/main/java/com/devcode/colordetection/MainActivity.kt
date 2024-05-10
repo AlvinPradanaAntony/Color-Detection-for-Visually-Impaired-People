@@ -2,16 +2,14 @@ package com.devcode.colordetection
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.devcode.colordetection.databinding.ActivityMainBinding
 import org.opencv.android.CameraActivity
 import org.opencv.android.CameraBridgeViewBase
+import org.opencv.android.JavaCameraView
 import org.opencv.android.OpenCVLoader
 import org.opencv.core.Mat
 import java.util.Collections
@@ -19,13 +17,19 @@ import java.util.Collections
 class MainActivity : CameraActivity()  {
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraBridgeViewBase: CameraBridgeViewBase
+    private lateinit var camera: JavaCameraView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-//        getPermission()
+        setupCamera()
+        val toolbar = binding.toolbarId
+        toolbar.title = "Deteksi Warna"
 
-        val camera = binding.cameraView
+    }
+
+    private fun setupCamera(){
+        camera = binding.cameraView
         cameraBridgeViewBase = camera
         cameraBridgeViewBase.setCvCameraViewListener(object :
             CameraBridgeViewBase.CvCameraViewListener2 {
@@ -37,13 +41,8 @@ class MainActivity : CameraActivity()  {
                 return inputFrame.rgba()
             }
         })
-        if (OpenCVLoader.initLocal()) {
-            Toast.makeText(this, "OpenCV loaded", Toast.LENGTH_SHORT).show()
-            cameraBridgeViewBase.enableView()
-        } else {
-            Toast.makeText(this, "OpenCV not loaded", Toast.LENGTH_SHORT).show()
-        }
-
+        val message = if (OpenCVLoader.initLocal()) { cameraBridgeViewBase.enableView(); "OpenCV loaded" } else "OpenCV not loaded"
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     public override fun onResume() {

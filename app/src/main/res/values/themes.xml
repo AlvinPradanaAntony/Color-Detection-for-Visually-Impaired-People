@@ -9,11 +9,17 @@
     <style name="Theme.ColorDetection" parent="Base.Theme.ColorDetection" />
     <style name="Theme.MainScreen" parent="Base.Theme.ColorDetection">
         <item name="android:windowFullscreen">true</item>
+<!--        <item name="android:windowTranslucentStatus">true</item>-->
+<!--        <item name="android:windowTranslucentNavigation">true</item>-->
     </style>
 <!--    <style name="Theme.SplashScreen" parent="Theme.ColorDetection">-->
 <!--        <item name="android:navigationBarColor">@color/white</item>-->
 <!--    </style>-->
-    
+    <style name="CardViewStyle" parent="CardView">
+        <item name="cardBackgroundColor">@color/white</item>
+        <item name="cardCornerRadius">35dp</item>
+        <item name="cardElevation">8dp</item>
+    </style>
     <style name="TextHeader" parent="Widget.AppCompat.TextView">
         <item name="android:textColor">@color/black_text</item>
     </style>

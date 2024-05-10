@@ -33,7 +33,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.MainScreen"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MainScreen" />
     </application>
 
 </manifest>
