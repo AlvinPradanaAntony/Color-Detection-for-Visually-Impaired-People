@@ -3,6 +3,7 @@ package com.devcode.colordetection
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -18,6 +19,8 @@ class MainActivity : CameraActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraBridgeViewBase: CameraBridgeViewBase
     private lateinit var camera: JavaCameraView
+    private lateinit var btnFlash: ImageButton
+    private var isFlashOn = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -25,7 +28,7 @@ class MainActivity : CameraActivity() {
         setupCamera()
         val toolbar = binding.toolbarId
         toolbar.title = "Deteksi Warna"
-
+        setupAction()
     }
 
     private fun setupCamera() {
@@ -45,6 +48,31 @@ class MainActivity : CameraActivity() {
             cameraBridgeViewBase.enableView(); "OpenCV loaded"
         } else "OpenCV not loaded"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setupAction(){
+        btnFlash = binding.btnFlash
+        btnFlash.setOnClickListener {
+            isFlashOn = if (!isFlashOn) {
+                try {
+                    camera.setFlashMode(this,1)
+                    btnFlash.setImageResource(R.drawable.ic_flash)
+                    true
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Terjadi Kesalahan", Toast.LENGTH_SHORT).show()
+                    false
+                }
+            } else {
+                try {
+                    camera.setFlashMode(this,0)
+                    btnFlash.setImageResource(R.drawable.ic_flash_off)
+                    false
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Terjadi Kesalahan", Toast.LENGTH_SHORT).show()
+                    true
+                }
+            }
+        }
     }
 
     public override fun onResume() {

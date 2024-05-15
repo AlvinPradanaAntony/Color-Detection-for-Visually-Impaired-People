@@ -51,29 +51,57 @@
     
     </androidx.cardview.widget.CardView>
     
+<!--    <androidx.cardview.widget.CardView-->
+<!--        android:id="@+id/cv_flash"-->
+<!--        android:layout_width="45dp"-->
+<!--        android:layout_height="45dp"-->
+<!--        android:layout_marginTop="22dp"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:outlineAmbientShadowColor="@color/shadowColor2"-->
+<!--        android:outlineSpotShadowColor="@color/shadowColor2"-->
+<!--        app:cardBackgroundColor="#3E000000"-->
+<!--        app:cardCornerRadius="50dp"-->
+<!--        app:cardElevation="2dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/cv_snapcolor"-->
+<!--        tools:targetApi="28">-->
+<!--        -->
+<!--        <ImageView-->
+<!--            android:id="@+id/iv_flash"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:contentDescription="@string/flash"-->
+<!--            android:src="@drawable/ic_flash" />-->
+<!--    -->
+<!--    </androidx.cardview.widget.CardView>-->
+    
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_flash"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginTop="22dp"
         android:layout_marginEnd="8dp"
+        style="@style/CardViewStyle"
+        app:cardBackgroundColor="#3E000000"
         android:outlineAmbientShadowColor="@color/shadowColor2"
         android:outlineSpotShadowColor="@color/shadowColor2"
-        app:cardBackgroundColor="#3E000000"
-        app:cardCornerRadius="50dp"
-        app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cv_snapcolor"
-        tools:targetApi="28">
+        app:cardCornerRadius="23dp"
+        app:cardElevation="0dp"
+        tools:targetApi="p">
         
-        <ImageView
-            android:id="@+id/iv_flash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageButton
+            android:id="@+id/btn_flash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
             android:layout_gravity="center"
             android:contentDescription="@string/flash"
-            android:src="@drawable/ic_flash" />
-    
+            android:focusable="true"
+            android:src="@drawable/ic_flash_off" />
     </androidx.cardview.widget.CardView>
     
     <androidx.cardview.widget.CardView
@@ -120,7 +148,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/fo_nunito_sans_extra_bold"
-                    android:text="Nama warna"
+                    android:text="@string/nama_warna"
                     android:textColor="@color/black_text"
                     android:textSize="18sp" />
                 
@@ -129,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="-2dp"
                     android:fontFamily="@font/fo_nunito_sans_reguler"
-                    android:text="#hex_warna"
+                    android:text="@string/hex_warna"
                     android:textColor="@color/black_text_2"
                     android:textSize="14sp" />
             </LinearLayout>

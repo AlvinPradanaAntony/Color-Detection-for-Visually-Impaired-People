@@ -11,6 +11,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Toast;
 
 import org.opencv.BuildConfig;
 import org.opencv.core.CvType;
@@ -224,6 +225,28 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         }
 
         return result;
+    }
+
+    public void setFlashMode(Context item, int type) {
+
+        Camera.Parameters params = mCamera.getParameters();
+        List<String> FlashModes = params.getSupportedFlashModes();
+
+        switch (type) {
+            case 0 -> {
+                if (FlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
+                    params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                else
+                    Toast.makeText(item, "Off Mode not supported", Toast.LENGTH_SHORT).show();
+            }
+            case 1 -> {
+                if (FlashModes.contains(Camera.Parameters.FLASH_MODE_TORCH))
+                    params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                else
+                    Toast.makeText(item, "Torch Mode not supported", Toast.LENGTH_SHORT).show();
+            }
+        }
+        mCamera.setParameters(params);
     }
 
     protected void releaseCamera() {
