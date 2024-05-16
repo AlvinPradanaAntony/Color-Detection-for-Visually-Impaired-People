@@ -143,7 +143,7 @@
         "rootBuildGradleFolder": "F:\\Project_Mobile\\Kotlin\\Ml_Kit\\ColorDetection",
         "sdkFolder": "C:\\Users\\alvin\\AppData\\Local\\Android\\Sdk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "x86,armeabi-v7a,armeabi",
+        "ideBuildTargetAbi": "x86",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },
