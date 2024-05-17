@@ -29,6 +29,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#3E000000"
+            app:title="Deteksi Warna"
+            app:titleTextAppearance="@style/TextTitle"
             app:titleCentered="true" />
     
     </com.google.android.material.appbar.AppBarLayout>
@@ -57,7 +59,7 @@
         android:layout_height="wrap_content"
         android:hint="TextToSpeach"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/play_speak"
         app:layout_constraintEnd_toEndOf="@+id/cardView"
         app:layout_constraintStart_toStartOf="@+id/cardView">
         
@@ -69,7 +71,7 @@
     </com.google.android.material.textfield.TextInputLayout>
     
     <Button
-        android:id="@+id/button"
+        android:id="@+id/play_speak"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"

@@ -3,6 +3,8 @@ package com.devcode.colordetection
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import android.speech.tts.Voice
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -14,6 +16,7 @@ import org.opencv.android.JavaCameraView
 import org.opencv.android.OpenCVLoader
 import org.opencv.core.Mat
 import java.util.Collections
+import java.util.Locale
 
 class MainActivity : CameraActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -21,14 +24,36 @@ class MainActivity : CameraActivity() {
     private lateinit var camera: JavaCameraView
     private lateinit var btnFlash: ImageButton
     private var isFlashOn = false
+    private lateinit var textToSpeech: TextToSpeech
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupCamera()
-        val toolbar = binding.toolbarId
-        toolbar.title = "Deteksi Warna"
+        setupTextToSpeech()
         setupAction()
+    }
+
+
+    private fun setupTextToSpeech() {
+        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener {
+            if (it == TextToSpeech.SUCCESS) {
+                val result = textToSpeech.setLanguage(Locale("in", "ID"))
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Toast.makeText(this, "Bahasa tidak didukung", Toast.LENGTH_SHORT).show()
+                } else {
+                    textToSpeech.setSpeechRate(1.15f)
+                    val voiceMale = Voice("id-id-x-ide-network", Locale("in", "ID"),  Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
+                    val voiceFemale = Voice("id-id-x-idc-network", Locale("in", "ID"), Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
+                    textToSpeech.voice = voiceMale
+//                    textToSpeech.setPitch(1.16f) // Female
+                    textToSpeech.setPitch(0.9f) // Male
+                }
+            } else {
+                Toast.makeText(this, "Inisialisasi TTS Gagal", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun setupCamera() {
@@ -50,12 +75,14 @@ class MainActivity : CameraActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun setupAction(){
+    private fun setupAction() {
+        val btnSpeak = binding.playSpeak
+        val textfield = binding.textField
         btnFlash = binding.btnFlash
         btnFlash.setOnClickListener {
             isFlashOn = if (!isFlashOn) {
                 try {
-                    camera.setFlashMode(this,1)
+                    camera.setFlashMode(this, 1)
                     btnFlash.setImageResource(R.drawable.ic_flash)
                     true
                 } catch (e: Exception) {
@@ -64,7 +91,7 @@ class MainActivity : CameraActivity() {
                 }
             } else {
                 try {
-                    camera.setFlashMode(this,0)
+                    camera.setFlashMode(this, 0)
                     btnFlash.setImageResource(R.drawable.ic_flash_off)
                     false
                 } catch (e: Exception) {
@@ -72,6 +99,9 @@ class MainActivity : CameraActivity() {
                     true
                 }
             }
+        }
+        btnSpeak.setOnClickListener {
+            textToSpeech.speak(textfield.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
 
@@ -83,6 +113,8 @@ class MainActivity : CameraActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraBridgeViewBase.disableView()
+        textToSpeech.stop()
+        textToSpeech.shutdown()
     }
 
     override fun onPause() {

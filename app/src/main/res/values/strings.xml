@@ -7,4 +7,5 @@
     <string name="flash">Flash</string>
     <string name="hex_warna">#hex_warna</string>
     <string name="nama_warna">Nama warna</string>
+    <string name="button_sound">Button Sound</string>
 </resources>
