@@ -12,10 +12,11 @@ import com.devcode.colordetection.databinding.ActivityOnboardingBinding
 import java.util.Locale
 
 class OnboardingActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityOnboardingBinding
+    private lateinit var binding: ActivityOnboardingBinding
     private lateinit var viewPager: ViewPager2
     private lateinit var sectionsPagerAdapter: OnBoardingPagerAdapter
     private lateinit var textToSpeech: TextToSpeech
+    private var isVoiceOverEnabled = false
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -35,12 +36,15 @@ class OnboardingActivity : AppCompatActivity() {
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                playVoiceOver(position)
-                if (position == sectionsPagerAdapter.itemCount - 1) {
-                    binding.buttonNavigation.text = getString(R.string.end_fragment)
-                } else {
-                    binding.buttonNavigation.text = getString(R.string.start_fragment)
+                if (isVoiceOverEnabled) {
+                    playVoiceOver(position)
                 }
+                binding.buttonNavigation.text =
+                    if (position == sectionsPagerAdapter.itemCount - 1) {
+                        getString(R.string.end_fragment)
+                    } else {
+                        getString(R.string.start_fragment)
+                    }
             }
         })
     }
@@ -60,6 +64,19 @@ class OnboardingActivity : AppCompatActivity() {
             onBoardingFinished()
             finish()
         }
+        binding.apply {
+            soundButton.setOnClickListener {
+                if (textToSpeech.isSpeaking) {
+                    textToSpeech.stop()
+                    soundButton.setImageResource(R.drawable.ic_sound_off)
+                    isVoiceOverEnabled = false
+                } else {
+                    playVoiceOver(viewPager.currentItem)
+                    soundButton.setImageResource(R.drawable.ic_sound)
+                    isVoiceOverEnabled = true
+                }
+            }
+        }
     }
 
     private fun setupTextToSpeech() {
@@ -70,8 +87,22 @@ class OnboardingActivity : AppCompatActivity() {
                     Toast.makeText(this, "Bahasa tidak didukung", Toast.LENGTH_SHORT).show()
                 } else {
                     textToSpeech.setSpeechRate(1.15f)
-                    val voiceMale = Voice("id-id-x-ide-network", Locale("in", "ID"),  Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
-                    val voiceFemale = Voice("id-id-x-idc-network", Locale("in", "ID"), Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
+                    val voiceMale = Voice(
+                        "id-id-x-ide-network",
+                        Locale("in", "ID"),
+                        Voice.QUALITY_HIGH,
+                        Voice.LATENCY_LOW,
+                        true,
+                        null
+                    )
+                    val voiceFemale = Voice(
+                        "id-id-x-idc-network",
+                        Locale("in", "ID"),
+                        Voice.QUALITY_HIGH,
+                        Voice.LATENCY_LOW,
+                        true,
+                        null
+                    )
                     textToSpeech.voice = voiceMale
 //                    textToSpeech.setPitch(1.16f) // Female
                     textToSpeech.setPitch(0.9f) // Male
@@ -92,7 +123,7 @@ class OnboardingActivity : AppCompatActivity() {
         textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
-    private fun onBoardingFinished(){
+    private fun onBoardingFinished() {
         val sharedPref = this@OnboardingActivity.getSharedPreferences("onBoarding", MODE_PRIVATE)
         val editor = sharedPref.edit()
         editor.putBoolean("Finished", true)
