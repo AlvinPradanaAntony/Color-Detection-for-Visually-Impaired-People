@@ -13,6 +13,14 @@
         android:layout_height="match_parent"
         app:show_fps="false" />
     
+    <com.devcode.colordetection.customView.DrawingView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -52,34 +60,6 @@
         
     </androidx.cardview.widget.CardView>
     
-    <com.google.android.material.textfield.TextInputLayout
-        style="?attr/textInputFilledStyle"
-        android:id="@+id/TextFieldLayout"
-        android:layout_width="240dp"
-        android:layout_height="wrap_content"
-        android:hint="TextToSpeach"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/play_speak"
-        app:layout_constraintEnd_toEndOf="@+id/cardView"
-        app:layout_constraintStart_toStartOf="@+id/cardView">
-        
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textField"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    
-    </com.google.android.material.textfield.TextInputLayout>
-    
-    <Button
-        android:id="@+id/play_speak"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        android:text="Play"
-        app:layout_constraintBottom_toTopOf="@+id/cardView"
-        app:layout_constraintEnd_toEndOf="@+id/cardView"
-        app:layout_constraintStart_toStartOf="@+id/cardView" />
-    
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_flash"
         android:layout_width="45dp"
@@ -109,7 +89,7 @@
     </androidx.cardview.widget.CardView>
     
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardView"
+        android:id="@+id/layout_output_warna"
         style="@style/CardViewStyle"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
@@ -129,7 +109,7 @@
             android:layout_margin="10dp">
             
             <View
-                android:id="@+id/view"
+                android:id="@+id/view_color"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:layout_marginStart="4dp"
@@ -145,11 +125,11 @@
                 android:layout_marginStart="10dp"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/view"
-                app:layout_constraintTop_toTopOf="@+id/view">
+                app:layout_constraintStart_toEndOf="@+id/view_color"
+                app:layout_constraintTop_toTopOf="@+id/view_color">
                 
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/color_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/fo_nunito_sans_extra_bold"
@@ -158,6 +138,7 @@
                     android:textSize="18sp" />
                 
                 <TextView
+                    android:id="@+id/color_hex"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="-2dp"

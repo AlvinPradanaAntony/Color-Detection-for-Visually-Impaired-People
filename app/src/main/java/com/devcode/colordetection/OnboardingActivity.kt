@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -107,6 +108,7 @@ class OnboardingActivity : AppCompatActivity() {
 //                    textToSpeech.setPitch(1.16f) // Female
                     textToSpeech.setPitch(0.9f) // Male
                     playVoiceOver(viewPager.currentItem)
+                    isVoiceOverEnabled = true
                 }
             } else {
                 Toast.makeText(this, "Inisialisasi TTS Gagal", Toast.LENGTH_SHORT).show()
@@ -128,5 +130,10 @@ class OnboardingActivity : AppCompatActivity() {
         val editor = sharedPref.edit()
         editor.putBoolean("Finished", true)
         editor.apply()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        textToSpeech.stop()
+        textToSpeech.shutdown()
     }
 }
