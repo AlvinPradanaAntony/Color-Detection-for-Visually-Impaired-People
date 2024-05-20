@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -88,22 +87,8 @@ class OnboardingActivity : AppCompatActivity() {
                     Toast.makeText(this, "Bahasa tidak didukung", Toast.LENGTH_SHORT).show()
                 } else {
                     textToSpeech.setSpeechRate(1.15f)
-                    val voiceMale = Voice(
-                        "id-id-x-ide-network",
-                        Locale("in", "ID"),
-                        Voice.QUALITY_HIGH,
-                        Voice.LATENCY_LOW,
-                        true,
-                        null
-                    )
-                    val voiceFemale = Voice(
-                        "id-id-x-idc-network",
-                        Locale("in", "ID"),
-                        Voice.QUALITY_HIGH,
-                        Voice.LATENCY_LOW,
-                        true,
-                        null
-                    )
+                    val voiceMale = Voice("id-id-x-ide-network", Locale("in", "ID"), Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
+                    val voiceFemale = Voice("id-id-x-idc-network", Locale("in", "ID"), Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
                     textToSpeech.voice = voiceMale
 //                    textToSpeech.setPitch(1.16f) // Female
                     textToSpeech.setPitch(0.9f) // Male
@@ -131,6 +116,7 @@ class OnboardingActivity : AppCompatActivity() {
         editor.putBoolean("Finished", true)
         editor.apply()
     }
+
     override fun onDestroy() {
         super.onDestroy()
         textToSpeech.stop()
