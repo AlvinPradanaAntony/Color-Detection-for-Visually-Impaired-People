@@ -89,6 +89,34 @@
     </androidx.cardview.widget.CardView>
     
     <androidx.cardview.widget.CardView
+        android:id="@+id/cv_resolutions"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="8dp"
+        style="@style/CardViewStyle"
+        app:cardBackgroundColor="#3E000000"
+        android:outlineAmbientShadowColor="@color/shadowColor2"
+        android:outlineSpotShadowColor="@color/shadowColor2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cv_flash"
+        app:cardCornerRadius="23dp"
+        app:cardElevation="0dp"
+        tools:targetApi="p">
+        
+        <ImageButton
+            android:id="@+id/btn_resolutions"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:layout_gravity="center"
+            android:contentDescription="Ratio"
+            android:focusable="true"
+            android:src="@drawable/ic_ratio" />
+    </androidx.cardview.widget.CardView>
+    
+    <androidx.cardview.widget.CardView
         android:id="@+id/layout_output_warna"
         style="@style/CardViewStyle"
         android:layout_width="300dp"

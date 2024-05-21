@@ -2,12 +2,20 @@ package com.devcode.colordetection
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.hardware.Camera
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.devcode.colordetection.databinding.ActivityMainBinding
+import com.devcode.colordetection.databinding.ItemLayoutInfoDialogBinding
+import com.devcode.colordetection.databinding.ItemRowListBinding
 import org.opencv.android.CameraActivity
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.JavaCameraView
@@ -28,11 +36,15 @@ class MainActivity : CameraActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraBridgeViewBase: CameraBridgeViewBase
     private lateinit var camera: JavaCameraView
-    private lateinit var btnFlash: ImageButton
-    private var isFlashOn = false
+    private lateinit var rvList: RecyclerView
+    private lateinit var mCamera: Camera
     private lateinit var mRgba: Mat
     private lateinit var mGray: Mat
     private lateinit var cascadeClassifier: CascadeClassifier
+    private var show_resolutions_list = 0
+    private val list = ArrayList<ListRes>()
+    private var isFlashOn = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +53,7 @@ class MainActivity : CameraActivity() {
         setupCamera()
         setupAction()
 //        loadModel()
+        list.addAll(resolutionList())
     }
 
     private fun loadModel() {
@@ -134,12 +147,11 @@ class MainActivity : CameraActivity() {
     }
 
     private fun setupAction() {
-        btnFlash = binding.btnFlash
-        btnFlash.setOnClickListener {
+        binding.btnFlash.setOnClickListener {
             isFlashOn = if (!isFlashOn) {
                 try {
                     camera.setFlashMode(this, 1)
-                    btnFlash.setImageResource(R.drawable.ic_flash)
+                    binding.btnFlash.setImageResource(R.drawable.ic_flash)
                     true
                 } catch (e: Exception) {
                     Toast.makeText(this, "Terjadi Kesalahan", Toast.LENGTH_SHORT).show()
@@ -148,7 +160,7 @@ class MainActivity : CameraActivity() {
             } else {
                 try {
                     camera.setFlashMode(this, 0)
-                    btnFlash.setImageResource(R.drawable.ic_flash_off)
+                    binding.btnFlash.setImageResource(R.drawable.ic_flash_off)
                     false
                 } catch (e: Exception) {
                     Toast.makeText(this, "Terjadi Kesalahan", Toast.LENGTH_SHORT).show()
@@ -156,6 +168,56 @@ class MainActivity : CameraActivity() {
                 }
             }
         }
+        binding.btnResolutions.setOnClickListener {
+            val alertDialog = AlertDialog.Builder(this@MainActivity)
+            val dialog = alertDialog.create()
+
+            val dialogView = layoutInflater.inflate(R.layout.item_layout_info_dialog, null, false)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.setView(dialogView)
+            val rvRes = dialogView.findViewById<View>(R.id.list_resolutions)
+            rvList = rvRes as RecyclerView
+            rvList.setHasFixedSize(true)
+            showRecyclerList()
+            dialogView.findViewById<View>(R.id.btn_close).setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
+    }
+
+    private fun resolutionList(): ArrayList<ListRes>{
+
+        mCamera= Camera.open()
+        val parameters = mCamera.parameters
+        val sizes: List<Camera.Size> = parameters.supportedPreviewSizes
+        val resolution_array_list = ArrayList<ListRes>()
+        for (i in sizes.indices) {
+            val frameWidth = sizes[i].width
+            val frameHeight = sizes[i].height
+            val res = "$frameWidth x $frameHeight"
+            val listRes = ListRes(res, frameWidth, frameHeight)
+            resolution_array_list.add(listRes)
+            Log.w("Resolution", "Resolution: $res")
+        }
+        return resolution_array_list
+    }
+
+    private fun showRecyclerList() {
+        rvList.layoutManager = LinearLayoutManager(this@MainActivity)
+        val listAdapter = ViewAdapter(list)
+        rvList.adapter = listAdapter
+        listAdapter.setOnItemClickCallback(object : ViewAdapter.OnItemClickCallback {
+            override fun onItemClicked(data: ListRes) {
+                val resolution = data.resolution
+                val frameWidth = data.width
+                val frameHeight = data.height
+                camera.disableView()
+                camera.setMaxFrameSize(frameWidth!!, frameHeight!!)
+                camera.enableView()
+                Toast.makeText(this@MainActivity, "$resolution, Width: $frameWidth, Height: $frameHeight", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     public override fun onResume() {
