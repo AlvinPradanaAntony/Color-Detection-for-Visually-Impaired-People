@@ -6,7 +6,7 @@ import android.hardware.Camera
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ImageButton
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -14,22 +14,21 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.devcode.colordetection.databinding.ActivityMainBinding
-import com.devcode.colordetection.databinding.ItemLayoutInfoDialogBinding
-import com.devcode.colordetection.databinding.ItemRowListBinding
 import org.opencv.android.CameraActivity
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.JavaCameraView
 import org.opencv.android.OpenCVLoader
 import org.opencv.core.Core
+import org.opencv.core.CvType
 import org.opencv.core.Mat
-import org.opencv.core.MatOfRect
-import org.opencv.core.Rect
+import org.opencv.core.MatOfPoint
 import org.opencv.core.Scalar
-import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
-import org.opencv.objdetect.CascadeClassifier
-import java.io.File
-import java.io.FileOutputStream
+import weka.classifiers.Classifier
+import weka.core.Attribute
+import weka.core.DenseInstance
+import weka.core.Instances
+import weka.core.SerializationHelper
 import java.util.Collections
 
 class MainActivity : CameraActivity() {
@@ -40,44 +39,24 @@ class MainActivity : CameraActivity() {
     private lateinit var mCamera: Camera
     private lateinit var mRgba: Mat
     private lateinit var mGray: Mat
-    private lateinit var cascadeClassifier: CascadeClassifier
-    private var show_resolutions_list = 0
     private val list = ArrayList<ListRes>()
     private var isFlashOn = false
+    private var fw = 0
+    private var fh = 0
+    private var mHsv: Mat? = null
+    private var mRgbaF: Mat? = null
+    private var mRgbaT: Mat? = null
+    var liveC: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setupCamera()
         setupAction()
-//        loadModel()
         list.addAll(resolutionList())
-    }
-
-    private fun loadModel() {
-        try {
-            val cascadeFile = resources.openRawResource(R.raw.haarcascade_frontalface_alt)
-            val cascadeDir = getDir("cascade", MODE_PRIVATE)
-            val cascadeFileOut = File(cascadeDir, "haarcascade_frontalface_alt.xml")
-            val os = FileOutputStream(cascadeFileOut)
-
-            val buffer = ByteArray(4096)
-            var bytesRead: Int
-            while (cascadeFile.read(buffer).also { bytesRead = it } != -1) {
-                os.write(buffer, 0, bytesRead)
-            }
-
-            cascadeFile.close()
-            os.close()
-
-            cascadeClassifier = CascadeClassifier(cascadeFileOut.absolutePath)
-            Toast.makeText(this, "Model loaded", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "Model not loaded", Toast.LENGTH_SHORT).show()
-        }
-
     }
 
     private fun setupCamera() {
@@ -85,25 +64,64 @@ class MainActivity : CameraActivity() {
         cameraBridgeViewBase = camera
         cameraBridgeViewBase.setCvCameraViewListener(object :
             CameraBridgeViewBase.CvCameraViewListener2 {
-            override fun onCameraViewStarted(width: Int, height: Int) {}
+            override fun onCameraViewStarted(width: Int, height: Int) {
+                mRgba = Mat(height, width, CvType.CV_8UC4)
+                mGray = Mat(height, width, CvType.CV_8UC1)
+                mHsv = Mat(width, height, CvType.CV_8UC3)
+                mRgbaT = Mat(height, width, CvType.CV_8UC4)
+                mRgbaF = Mat(fh, fw, CvType.CV_8UC4)
+                Log.w("Resolution", "Width: $width, Height: $height")
+            }
 
-            override fun onCameraViewStopped() {}
+            override fun onCameraViewStopped() {
+                mRgba.release()
+            }
 
             override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame): Mat {
                 mRgba = inputFrame.rgba()
                 mGray = inputFrame.gray()
 
-                // Convert Rgba to Gray
-//                Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_RGBA2GRAY)
+                val corners = MatOfPoint()
+                Imgproc.goodFeaturesToTrack(mGray, corners, 10, 0.5, 20.0, Mat(), 2, false)
+                //Point[] cornersArr = corners.toArray();
+                //Point[] cornersArr = corners.toArray();
+                var R: Int
+                var G: Int
+                var B: Int
 
-                // Edge Detection
-//                val edges = Mat()
-//                Imgproc.Canny(mRgba, edges, 80.0, 200.0)
+                //convert mat rgb to mat hsv-----------------*/
+                Imgproc.cvtColor(mRgba, mHsv, Imgproc.COLOR_RGB2HSV)
 
-                // Face Detection
-                // Processing pass mRgba to cascadeClassifier
-//                mRgba = CascadeRec(mRgba)
+                //find scalar sum of (array elements) hsv
+                val mColorHsv = Core.sumElems(mHsv)
 
+                //int pointCount = 320*240; //9:12
+                //int pointCount = 540*720; //more accurate
+                val pointCount = 600 * 800 //4:3
+
+                //convert each pixel
+                for (i in mColorHsv.`val`.indices) {
+                    mColorHsv.`val`[i] /= pointCount.toDouble()
+                }
+
+
+                //convert hsv scalar to rgb scalar
+                val mColorRgb: Scalar = convertScalarHsv2Rgba(mColorHsv)
+                Log.d("intensity", "Color: #${String.format("%02X", mColorHsv.`val`[0].toInt())}${String.format("%02X", mColorHsv.`val`[1].toInt())}${String.format("%02X", mColorHsv.`val`[2].toInt())}")
+
+                // Log.d("intensity", "Color: #" + String.format("%02X", (int) mColorHsv.val[0])+ String.format("%02X", (int) mColorHsv.val[1])+ String.format("%02X", (int) mColorHsv.val[2]));
+                //Get RGB Values
+                R = mColorRgb.`val`[0].toInt()
+                G = mColorRgb.`val`[1].toInt()
+                B = mColorRgb.`val`[2].toInt()
+                val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
+                try {
+                    modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("l2_rgb_en_k-1.model"))
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+                liveC = knnProcess1(R, G, B, modelAndHeaderEN)
+                Log.d("Color Result", "Color: $liveC")
                 return mRgba
             }
         })
@@ -111,39 +129,6 @@ class MainActivity : CameraActivity() {
             cameraBridgeViewBase.enableView(); "OpenCV loaded"
         } else "OpenCV not loaded"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun CascadeRec(mRgba: Mat): Mat {
-//        val faces = MatOfRect()
-//        cascadeClassifier.detectMultiScale(mRgba, faces)
-//        for (rect in faces.toArray()) {
-//            Imgproc.rectangle(
-//                mRgba,
-//                rect.tl(),
-//                rect.br(),
-//                org.opencv.core.Scalar(255.0, 0.0, 0.0, 255.0),
-//                3
-//            )
-//        }
-
-        Core.flip(mRgba.t(), mRgba, 1)
-        val mRgb = Mat()
-        Imgproc.cvtColor(mRgba, mRgb, Imgproc.COLOR_RGBA2RGB)
-
-        val height: Int = mRgb.height();
-        val absoluteFaceSize = (height * 0.1).toInt()
-        val faces = MatOfRect()
-        if (cascadeClassifier != null){
-            cascadeClassifier.detectMultiScale(mRgb, faces, 1.1, 2, 2, Size(absoluteFaceSize.toDouble(), absoluteFaceSize.toDouble()), Size())
-        }
-        val facesArray: Array<Rect> = faces.toArray()
-        for (face in facesArray) {
-            Imgproc.rectangle(mRgba, face.tl(), face.br(), Scalar(0.0, 255.0, 0.0, 255.0), 2
-            )
-        }
-        Core.flip(mRgba.t(), mRgba, 0)
-
-        return mRgba
     }
 
     private fun setupAction() {
@@ -187,18 +172,22 @@ class MainActivity : CameraActivity() {
     }
 
     private fun resolutionList(): ArrayList<ListRes>{
-
         mCamera= Camera.open()
         val parameters = mCamera.parameters
         val sizes: List<Camera.Size> = parameters.supportedPreviewSizes
         val resolution_array_list = ArrayList<ListRes>()
+
         for (i in sizes.indices) {
-            val frameWidth = sizes[i].width
-            val frameHeight = sizes[i].height
-            val res = "$frameWidth x $frameHeight"
-            val listRes = ListRes(res, frameWidth, frameHeight)
-            resolution_array_list.add(listRes)
-            Log.w("Resolution", "Resolution: $res")
+            try {
+                val frameWidth = sizes[i].width
+                val frameHeight = sizes[i].height
+                val res = "$frameWidth x $frameHeight"
+                val listRes = ListRes(res, frameWidth, frameHeight)
+                resolution_array_list.add(listRes)
+                Log.w("Resolution", "Resolution: $res")
+            } catch (e: Exception) {
+                Log.e("Error Resolution", "Error: ${e.message}")
+            }
         }
         return resolution_array_list
     }
@@ -212,17 +201,83 @@ class MainActivity : CameraActivity() {
                 val resolution = data.resolution
                 val frameWidth = data.width
                 val frameHeight = data.height
+                fw = frameWidth
+                fh = frameHeight
                 camera.disableView()
-                camera.setMaxFrameSize(frameWidth!!, frameHeight!!)
+                camera.setMaxFrameSize(frameWidth, frameHeight)
                 camera.enableView()
                 Toast.makeText(this@MainActivity, "$resolution, Width: $frameWidth, Height: $frameHeight", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
+    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
+        val pointMatRgba = Mat()
+        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
+        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB)
+        return Scalar(pointMatRgba[0, 0])
+    }
+
+    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
+        var prediction: String? = null
+        try {
+            // Create list of attributes.
+            val numericAtt = ArrayList<Attribute>()
+            val nominalAtt = ArrayList<String>()
+
+            // Add numeric attributes/columns
+            numericAtt.add(Attribute("R"))
+            numericAtt.add(Attribute("G"))
+            numericAtt.add(Attribute("B"))
+
+            // Add nominal/letters attributes/column
+            nominalAtt.add("val3") // label for att2-----------
+            numericAtt.add(Attribute("Color Names", nominalAtt))
+
+            // Create Instances object
+            val data = Instances("Testing Data", numericAtt, 1000)
+
+            // Fill with data
+            val vals = DoubleArray(data.numAttributes())
+            vals[0] = r.toDouble()
+            vals[1] = g.toDouble()
+            vals[2] = b.toDouble()
+            vals[3] = nominalAtt.indexOf("val3").toDouble()
+
+            // Add to instance
+            data.add(DenseInstance(1.0, vals))
+            if (data.classIndex() == -1) {
+                data.setClassIndex(data.numAttributes() - 1)
+            }
+
+            // Set class index for comparison testing
+            data.setClassIndex(data.numAttributes() - 1)
+
+            // KNN Weka part
+            if (modelAndHeader[0]?.size != 2) {
+                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
+            } else {
+                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
+                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
+
+                val value = knnmodel.classifyInstance(data.instance(0))
+
+                // Get the name of the class value
+                prediction = m_modelHeader.classAttribute().value(value.toInt())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return prediction
+    }
+
     public override fun onResume() {
         super.onResume()
         cameraBridgeViewBase.enableView()
+        if (!OpenCVLoader.initDebug()) {
+            Toast.makeText(applicationContext, "There is a problem in opencv", Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onDestroy() {
@@ -240,11 +295,7 @@ class MainActivity : CameraActivity() {
     }
 
     private fun getPermission() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, 101)
         }
     }
