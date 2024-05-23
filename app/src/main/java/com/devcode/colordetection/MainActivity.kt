@@ -53,9 +53,13 @@ class MainActivity : CameraActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        setupView()
         setupCamera()
         setupAction()
+    }
+
+    private fun setupView(){
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         list.addAll(resolutionList())
     }
 
@@ -218,6 +222,60 @@ class MainActivity : CameraActivity() {
         return Scalar(pointMatRgba[0, 0])
     }
 
+//    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
+//        var prediction: String? = null
+//        try {
+//            // Create list of attributes.
+//            val numericAtt = ArrayList<Attribute>()
+//            val nominalAtt = ArrayList<String>()
+//
+//            // Add numeric attributes/columns
+//            numericAtt.add(Attribute("R"))
+//            numericAtt.add(Attribute("G"))
+//            numericAtt.add(Attribute("B"))
+//
+//            // Add nominal/letters attributes/column
+//            nominalAtt.add("val3") // label for att2-----------
+//            numericAtt.add(Attribute("Color Names", nominalAtt))
+//
+//            // Create Instances object
+//            val data = Instances("Testing Data", numericAtt, 1000)
+//
+//            // Fill with data
+//            val vals = DoubleArray(data.numAttributes())
+//            vals[0] = r.toDouble()
+//            vals[1] = g.toDouble()
+//            vals[2] = b.toDouble()
+//            vals[3] = nominalAtt.indexOf("val3").toDouble()
+//
+//            // Add to instance
+//            data.add(DenseInstance(1.0, vals))
+//            if (data.classIndex() == -1) {
+//                data.setClassIndex(data.numAttributes() - 1)
+//            }
+//
+//            // Set class index for comparison testing
+//            data.setClassIndex(data.numAttributes() - 1)
+//
+//            // KNN Weka part
+//            if (modelAndHeader[0]?.size != 2) {
+//                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
+//            } else {
+//                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
+//                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
+//
+//                val value = knnmodel.classifyInstance(data.instance(0))
+//
+//                // Get the name of the class value
+//                prediction = m_modelHeader.classAttribute().value(value.toInt())
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//
+//        return prediction
+//    }
+
     private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
         var prediction: String? = null
         try {
@@ -231,34 +289,26 @@ class MainActivity : CameraActivity() {
             numericAtt.add(Attribute("B"))
 
             // Add nominal/letters attributes/column
-            nominalAtt.add("val3") // label for att2-----------
+            nominalAtt.add("val3") // label for the nominal attribute
             numericAtt.add(Attribute("Color Names", nominalAtt))
 
             // Create Instances object
             val data = Instances("Testing Data", numericAtt, 1000)
 
             // Fill with data
-            val vals = DoubleArray(data.numAttributes())
-            vals[0] = r.toDouble()
-            vals[1] = g.toDouble()
-            vals[2] = b.toDouble()
-            vals[3] = nominalAtt.indexOf("val3").toDouble()
+            val vals = doubleArrayOf(r.toDouble(), g.toDouble(), b.toDouble(), nominalAtt.indexOf("val3").toDouble())
 
             // Add to instance
             data.add(DenseInstance(1.0, vals))
-            if (data.classIndex() == -1) {
-                data.setClassIndex(data.numAttributes() - 1)
-            }
-
-            // Set class index for comparison testing
             data.setClassIndex(data.numAttributes() - 1)
 
             // KNN Weka part
-            if (modelAndHeader[0]?.size != 2) {
+            val modelAndHeaderElement = modelAndHeader[0]
+            if (modelAndHeaderElement?.size != 2) {
                 throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
             } else {
-                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
-                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
+                val knnmodel = modelAndHeaderElement[0] as Classifier
+                val m_modelHeader = modelAndHeaderElement[1] as Instances
 
                 val value = knnmodel.classifyInstance(data.instance(0))
 
@@ -300,11 +350,7 @@ class MainActivity : CameraActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {

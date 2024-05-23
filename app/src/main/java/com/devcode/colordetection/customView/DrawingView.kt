@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
@@ -19,49 +20,52 @@ class DrawingView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         paint.strokeWidth = 2f
     }
 
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         // TODO Auto-generated method stub
         val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
         val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
+        Log.d("parentWidth", "${parentWidth.toString()} x ${parentHeight.toString()}")
         setMeasuredDimension(parentWidth, parentHeight)
         touch_x = (parentWidth / 2).toFloat()
         touch_y = (parentHeight / 2).toFloat()
+        Log.d("touch", "${touch_x.toString()} x ${touch_y.toString()}")
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     public override fun onDraw(canvas: Canvas) {
+        val lineLength = 30f
+        val offset = 80f
         canvas.drawLine(
-            touch_x - 100, touch_y - 100, touch_x - 100 + 30,
-            touch_y - 100, paint
+            touch_x - offset, touch_y - offset, touch_x - offset + lineLength,
+            touch_y - offset, paint
         )
         canvas.drawLine(
-            touch_x + 100 - 30, touch_y - 100, touch_x + 100,
-            touch_y - 100, paint
+            touch_x + offset - lineLength, touch_y - offset, touch_x + offset,
+            touch_y - offset, paint
         )
         canvas.drawLine(
-            touch_x - 100, touch_y - 100, touch_x - 100,
-            touch_y - 100 + 30, paint
+            touch_x - offset, touch_y - offset, touch_x - offset,
+            touch_y - offset + lineLength, paint
         )
         canvas.drawLine(
-            touch_x + 100, touch_y - 100, touch_x + 100,
-            touch_y - 100 + 30, paint
+            touch_x + offset, touch_y - offset, touch_x + offset,
+            touch_y - offset + lineLength, paint
         )
         canvas.drawLine(
-            touch_x - 100, touch_y + 100 - 30, touch_x - 100,
-            touch_y + 100, paint
+            touch_x - offset, touch_y + offset - lineLength, touch_x - offset,
+            touch_y + offset, paint
         )
         canvas.drawLine(
-            touch_x - 100, touch_y + 100, touch_x - 100 + 30,
-            touch_y + 100, paint
+            touch_x - offset, touch_y + offset, touch_x - offset + lineLength,
+            touch_y + offset, paint
         )
         canvas.drawLine(
-            touch_x + 100 - 30, touch_y + 100, touch_x + 100,
-            touch_y + 100, paint
+            touch_x + offset - lineLength, touch_y + offset, touch_x + offset,
+            touch_y + offset, paint
         )
         canvas.drawLine(
-            touch_x + 100, touch_y + 100 - 30, touch_x + 100,
-            touch_y + 100, paint
+            touch_x + offset, touch_y + offset - lineLength, touch_x + offset,
+            touch_y + offset, paint
         )
         canvas.drawCircle(touch_x, touch_y, 20f, paint)
     }
