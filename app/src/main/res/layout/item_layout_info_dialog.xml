@@ -7,7 +7,7 @@
 
 
     <androidx.cardview.widget.CardView
-        android:layout_width="365dp"
+        android:layout_width="285dp"
         android:layout_height="wrap_content"
         android:outlineAmbientShadowColor="@color/shadowColor"
         android:outlineSpotShadowColor="@color/shadowColor"
@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="16dp"
                 android:backgroundTint="@color/tail_red"
                 android:paddingBottom="12dp"
                 app:cardCornerRadius="18dp"
@@ -53,14 +53,14 @@
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="10dp"
                 android:fontFamily="@font/fo_nunito_sans_extra_bold"
                 android:text="Resolution"
                 android:textColor="@color/black_text"
-                android:textSize="18sp"
+                android:textSize="22sp"
+                android:layout_marginTop="45dp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/container_btn_close" />
+                app:layout_constraintTop_toTopOf="parent" />
             
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_resolutions"
@@ -69,7 +69,8 @@
                 android:layout_marginTop="15dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView" />
+                app:layout_constraintTop_toBottomOf="@+id/textView"
+                tools:listitem="@layout/item_row_list" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

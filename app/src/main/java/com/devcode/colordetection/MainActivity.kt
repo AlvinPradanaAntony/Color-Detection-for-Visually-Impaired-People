@@ -3,9 +3,13 @@ package com.devcode.colordetection
 import android.Manifest
 import android.app.AlertDialog
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.hardware.Camera
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -18,8 +22,12 @@ import org.opencv.android.CameraActivity
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.JavaCameraView
 import org.opencv.android.OpenCVLoader
+import org.opencv.core.Core
 import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.Rect
+import org.opencv.core.Scalar
+import org.opencv.imgproc.Imgproc
 import java.util.Collections
 
 
@@ -33,14 +41,20 @@ class MainActivity : CameraActivity() {
     private lateinit var mCamera: Camera
     private lateinit var mRgba: Mat
     private lateinit var mGray: Mat
+    private lateinit var mHsv: Mat
+    private lateinit var mRgbaF: Mat
+    private lateinit var mRgbaT: Mat
+    private lateinit var mBlobColorHsv: Scalar
+    private lateinit var mBlobColorRgba: Scalar
     private val list = ArrayList<ListRes>()
     private var isFlashOn = false
     private var fw = 0
     private var fh = 0
-    private var mHsv: Mat? = null
-    private var mRgbaF: Mat? = null
-    private var mRgbaT: Mat? = null
     var liveC: String? = null
+
+
+    private var x = -1.0
+    private var y = -1.0
 
 
 
@@ -67,6 +81,8 @@ class MainActivity : CameraActivity() {
                 mHsv = Mat(width, height, CvType.CV_8UC3)
                 mRgbaT = Mat(height, width, CvType.CV_8UC4)
                 mRgbaF = Mat(fh, fw, CvType.CV_8UC4)
+                mBlobColorRgba = Scalar(255.0);
+                mBlobColorHsv = Scalar(255.0);
                 Log.w("Camera View Size", "Width: $width, Height: $height")
             }
 
@@ -320,7 +336,7 @@ class MainActivity : CameraActivity() {
 //        return prediction
 //    }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
         cameraBridgeViewBase.enableView()
         if (!OpenCVLoader.initDebug()) {
@@ -328,6 +344,87 @@ class MainActivity : CameraActivity() {
         }
     }
 
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+//        if (event != null) {
+//            x = event.x.toDouble()
+//            y = event.y.toDouble()
+//            touch_coordinates?.text = "X: $x, Y: $y"
+//            val cols = mRgba.cols()
+//            val rows = mRgba.rows()
+//            val xOffset = (camera.width - cols) / 2
+//            val yOffset = (camera.height - rows) / 2
+//            val x0 = (x - xOffset) * cols / camera.width
+//            val y0 = (y - yOffset) * rows / camera.height
+//            val point = mRgba.get(y0.toInt(), x0.toInt())
+//            val R = point[0]
+//            val G = point[1]
+//            val B = point[2]
+//            touch_color?.text = "R: $R, G: $G, B: $B"
+//        }
+        val cols = mRgba.cols()
+        val rows = mRgba.rows()
+
+        val yLow = cameraBridgeViewBase.height.toDouble() * 0.2401961
+        val yHigh = cameraBridgeViewBase.height.toDouble() * 0.7696078
+
+        val xScale = cols.toDouble() / cameraBridgeViewBase.width.toDouble()
+        val yScale = rows.toDouble() / (yHigh - yLow)
+
+        x = event.x.toDouble()
+        y = event.y.toDouble()
+
+        y = y - yLow
+
+        x = x * xScale
+        y = y * yScale
+
+        if (x < 0 || y < 0 || x > cols || y > rows) return false
+
+        binding.touchCoordinates.text = "X: " + java.lang.Double.valueOf(x) + ", Y: " + java.lang.Double.valueOf(y)
+
+        val touchedRect = Rect()
+
+        touchedRect.x = x.toInt()
+        touchedRect.y = y.toInt()
+
+        touchedRect.width = 8
+        touchedRect.height = 8
+
+        val touchedRegionRgba = mRgba.submat(touchedRect)
+
+        val touchedRegionHsv = Mat()
+        Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL)
+
+        mBlobColorHsv = Core.sumElems(touchedRegionHsv)
+        val pointCount = touchedRect.width * touchedRect.height
+        for (i in mBlobColorHsv.`val`.indices) mBlobColorHsv.`val`[i] /= pointCount.toDouble()
+        mBlobColorRgba = convertScalarHsv2Rgba(mBlobColorHsv);
+        binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
+        val colorResult = Color.rgb(
+            mBlobColorRgba.`val`[0].toInt(),
+            mBlobColorRgba.`val`[1].toInt(),
+            mBlobColorRgba.`val`[2].toInt()
+        )
+        binding.viewColor.setBackgroundColor(colorResult)
+        binding.colorHex.setTextColor(colorResult)
+        binding.cvSnapcolor.setCardBackgroundColor(colorResult)
+        binding.touchCoordinates.setTextColor(colorResult)
+        setViewBackgroundColor(binding.viewColor, colorResult, 100f)
+        return super.onTouchEvent(event)
+    }
+    private fun setViewBackgroundColor(view: View, color: Int, cornerRadius: Float) {
+        val gradientDrawable = GradientDrawable().apply {
+            setColor(color)
+            this.cornerRadius = cornerRadius
+        }
+        view.background = gradientDrawable
+    }
+    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
+        val pointMatRgba = Mat()
+        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
+        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4)
+        return Scalar(pointMatRgba[0, 0])
+    }
     override fun onDestroy() {
         super.onDestroy()
         cameraBridgeViewBase.disableView()

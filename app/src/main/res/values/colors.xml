@@ -13,7 +13,9 @@
     <color name="tail_green">#00BFA5</color>
     <color name="tail_pink">#FA8392</color>
     <color name="tail_red">#F73E41</color>
+    <color name="tail_blue_light">#F6F9FB</color>
     
     <color name="shadowColor">#000000</color>
     <color name="shadowColor2">#4D22292E</color>
+    
 </resources>

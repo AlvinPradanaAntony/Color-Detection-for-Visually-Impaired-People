@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/CardViewStyle"
+    app:cardBackgroundColor="@color/tail_blue_light"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="5dp"
@@ -11,7 +12,7 @@
     android:outlineAmbientShadowColor="@color/shadowColor2"
     android:outlineSpotShadowColor="@color/shadowColor2"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    app:cardElevation="1dp"
     tools:targetApi="p">
     
     <LinearLayout
