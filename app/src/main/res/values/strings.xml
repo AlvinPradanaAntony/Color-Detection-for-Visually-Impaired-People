@@ -8,4 +8,19 @@
     <string name="hex_warna">#hex_warna</string>
     <string name="nama_warna">Nama warna</string>
     <string name="button_sound">Button Sound</string>
+    <string name="title_app">Deteksi Warna</string>
+    <string name="coordinate_text">X: 0, Y: 0</string>
+    <string name="resolution">Resolution</string>
+    <string name="lewati">Lewati</string>
+    <string name="selanjutnya">Selanjutnya</string>
+    <string name="logo_app">logo_app</string>
+    <string name="pattern_splash">pattern_splash</string>
+    <string name="name_app">name_app</string>
+    <string name="deskripsi_onboarding2">Arahkan ponsel ke suatu benda yang ingin Anda kenali warnanya, dan aplikasi akan memberikan informasi warna tersebut melalui audio.</string>
+    <string name="onboarding_image_2">onboarding_image_2</string>
+    <string name="onboarding_image_1">onboarding_image_1</string>
+    <string name="deskpripsi_onboarding1">Aplikasi deteksi dan pengenalan warna yang membantu Anda dalam mengenali warna disekitar</string>
+    <string name="header_text">Selamat datang di ViSiON</string>
+    <string name="resolutions">Resolutions</string>
+    <string name="value_resolution">1920 x 1080</string>
 </resources>

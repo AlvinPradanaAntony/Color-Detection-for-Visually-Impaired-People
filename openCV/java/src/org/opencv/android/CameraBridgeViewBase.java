@@ -510,57 +510,6 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         }
     }
 
-//    protected void deliverAndDrawFrame(CvCameraViewFrame frame) {
-//        Mat modified;
-//
-//        if (mListener != null) {
-//            modified = mListener.onCameraFrame(frame);
-//        } else {
-//            modified = frame.rgba();
-//        }
-//
-//        boolean bmpValid = true;
-//        if (modified != null) {
-//            try {
-//                Utils.matToBitmap(modified, mCacheBitmap);
-//            } catch(Exception e) {
-//                Log.e(TAG, "Mat type: " + modified);
-//                Log.e(TAG, "Bitmap type: " + mCacheBitmap.getWidth() + "*" + mCacheBitmap.getHeight());
-//                Log.e(TAG, "Utils.matToBitmap() throws an exception: " + e.getMessage());
-//                bmpValid = false;
-//            }
-//        }
-//
-//        if (bmpValid && mCacheBitmap != null) {
-//            Canvas canvas = getHolder().lockCanvas();
-//            if (canvas != null) {
-//                canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-//                if (BuildConfig.DEBUG)
-//                    Log.d(TAG, "mStretch value: " + mScale);
-//
-//                if (mScale != 0) {
-//                    canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-//                         new Rect((int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2),
-//                         (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2),
-//                         (int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2 + mScale*mCacheBitmap.getWidth()),
-//                         (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2 + mScale*mCacheBitmap.getHeight())), null);
-//                } else {
-//                     canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-//                         new Rect((canvas.getWidth() - mCacheBitmap.getWidth()) / 2,
-//                         (canvas.getHeight() - mCacheBitmap.getHeight()) / 2,
-//                         (canvas.getWidth() - mCacheBitmap.getWidth()) / 2 + mCacheBitmap.getWidth(),
-//                         (canvas.getHeight() - mCacheBitmap.getHeight()) / 2 + mCacheBitmap.getHeight()), null);
-//                }
-//
-//                if (mFpsMeter != null) {
-//                    mFpsMeter.measure();
-//                    mFpsMeter.draw(canvas, 20, 30);
-//                }
-//                getHolder().unlockCanvasAndPost(canvas);
-//            }
-//        }
-//    }
-
     /**
      * This method is invoked shall perform concrete operation to initialize the camera.
      * CONTRACT: as a result of this method variables mFrameWidth and mFrameHeight MUST be

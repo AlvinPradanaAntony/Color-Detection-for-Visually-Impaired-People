@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/fo_nunito_sans_extra_bold"
-                android:text="Resolution"
+                android:text="@string/resolutions"
                 android:textColor="@color/black_text"
                 android:textSize="22sp"
                 android:layout_marginTop="45dp"

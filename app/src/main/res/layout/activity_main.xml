@@ -13,13 +13,23 @@
         android:layout_height="match_parent"
         app:show_fps="false" />
     
-<!--    <com.devcode.colordetection.customView.DrawingView-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"/>-->
+    <!--    <com.devcode.colordetection.customView.DrawingView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"/>-->
+    
+    <View
+        android:id="@+id/pointer"
+        android:layout_width="13dp"
+        android:layout_height="13dp"
+        android:background="@drawable/pointer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/camera_view" />
     
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -37,9 +47,9 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#3E000000"
-            app:title="Deteksi Warna"
-            app:titleTextAppearance="@style/TextTitle"
-            app:titleCentered="true" />
+            app:title="@string/title_app"
+            app:titleCentered="true"
+            app:titleTextAppearance="@style/TextTitle" />
     
     </com.google.android.material.appbar.AppBarLayout>
     
@@ -47,12 +57,13 @@
         android:id="@+id/touch_coordinates"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="X: 0, Y: 0"
-        android:layout_marginTop="10dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/coordinate_text"
         android:textColor="@color/tail_green"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+    
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_snapcolor"
         android:layout_width="45dp"
@@ -67,32 +78,32 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
         tools:targetApi="28">
-        
+    
     </androidx.cardview.widget.CardView>
     
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_flash"
+        style="@style/CardViewStyle"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginTop="22dp"
         android:layout_marginEnd="8dp"
-        style="@style/CardViewStyle"
-        app:cardBackgroundColor="#3E000000"
         android:outlineAmbientShadowColor="@color/shadowColor2"
         android:outlineSpotShadowColor="@color/shadowColor2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cv_snapcolor"
+        app:cardBackgroundColor="#3E000000"
         app:cardCornerRadius="23dp"
         app:cardElevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cv_snapcolor"
         tools:targetApi="p">
         
         <ImageButton
             android:id="@+id/btn_flash"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
-            android:layout_gravity="center"
             android:contentDescription="@string/flash"
             android:focusable="true"
             android:src="@drawable/ic_flash_off" />
@@ -100,28 +111,28 @@
     
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_resolutions"
+        style="@style/CardViewStyle"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginTop="22dp"
         android:layout_marginEnd="8dp"
-        style="@style/CardViewStyle"
-        app:cardBackgroundColor="#3E000000"
         android:outlineAmbientShadowColor="@color/shadowColor2"
         android:outlineSpotShadowColor="@color/shadowColor2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cv_flash"
+        app:cardBackgroundColor="#3E000000"
         app:cardCornerRadius="23dp"
         app:cardElevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cv_flash"
         tools:targetApi="p">
         
         <ImageButton
             android:id="@+id/btn_resolutions"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
-            android:layout_gravity="center"
-            android:contentDescription="Ratio"
+            android:contentDescription="@string/resolution"
             android:focusable="true"
             android:src="@drawable/ic_ratio" />
     </androidx.cardview.widget.CardView>
@@ -198,8 +209,6 @@
                 app:layout_constraintTop_toTopOf="@+id/linearLayout" />
         
         </androidx.constraintlayout.widget.ConstraintLayout>
-    
-    
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

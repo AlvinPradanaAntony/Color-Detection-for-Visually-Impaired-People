@@ -28,7 +28,14 @@ import org.opencv.core.Mat
 import org.opencv.core.Rect
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
+import weka.classifiers.Classifier
+import weka.core.Attribute
+import weka.core.DenseInstance
+import weka.core.Instances
+import weka.core.SerializationHelper
 import java.util.Collections
+import kotlin.math.max
+import kotlin.math.min
 
 
 class MainActivity : CameraActivity() {
@@ -46,6 +53,7 @@ class MainActivity : CameraActivity() {
     private lateinit var mRgbaT: Mat
     private lateinit var mBlobColorHsv: Scalar
     private lateinit var mBlobColorRgba: Scalar
+    private lateinit var pointer: View
     private val list = ArrayList<ListRes>()
     private var isFlashOn = false
     private var fw = 0
@@ -63,6 +71,7 @@ class MainActivity : CameraActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
+        pointer = binding.pointer
         setupCamera()
         setupAction()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -98,9 +107,7 @@ class MainActivity : CameraActivity() {
 //                Imgproc.goodFeaturesToTrack(mGray, corners, 10, 0.5, 20.0, Mat(), 2, false)
 //                //Point[] cornersArr = corners.toArray();
 //                //Point[] cornersArr = corners.toArray();
-//                var R: Int
-//                var G: Int
-//                var B: Int
+
 //
 //                //convert mat rgb to mat hsv-----------------*/
 //                Imgproc.cvtColor(mRgba, mHsv, Imgproc.COLOR_RGB2HSV)
@@ -123,18 +130,8 @@ class MainActivity : CameraActivity() {
 //                Log.d("intensity", "Color: #${String.format("%02X", mColorHsv.`val`[0].toInt())}${String.format("%02X", mColorHsv.`val`[1].toInt())}${String.format("%02X", mColorHsv.`val`[2].toInt())}")
 //
 //                // Log.d("intensity", "Color: #" + String.format("%02X", (int) mColorHsv.val[0])+ String.format("%02X", (int) mColorHsv.val[1])+ String.format("%02X", (int) mColorHsv.val[2]));
-//                //Get RGB Values
-//                R = mColorRgb.`val`[0].toInt()
-//                G = mColorRgb.`val`[1].toInt()
-//                B = mColorRgb.`val`[2].toInt()
-//                val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
-//                try {
-//                    modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("l2_rgb_en_k-1.model"))
-//                } catch (e: java.lang.Exception) {
-//                    e.printStackTrace()
-//                }
-//                liveC = knnProcess1(R, G, B, modelAndHeaderEN)
-//                Log.d("Color Result", "Color: $liveC")
+                //Get RGB Values
+
                 return mRgba
             }
         })
@@ -236,105 +233,76 @@ class MainActivity : CameraActivity() {
 //        return Scalar(pointMatRgba[0, 0])
 //    }
 
-//    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
-//        var prediction: String? = null
-//        try {
-//            // Create list of attributes.
-//            val numericAtt = ArrayList<Attribute>()
-//            val nominalAtt = ArrayList<String>()
-//
-//            // Add numeric attributes/columns
-//            numericAtt.add(Attribute("R"))
-//            numericAtt.add(Attribute("G"))
-//            numericAtt.add(Attribute("B"))
-//
-//            // Add nominal/letters attributes/column
-//            nominalAtt.add("val3") // label for att2-----------
-//            numericAtt.add(Attribute("Color Names", nominalAtt))
-//
-//            // Create Instances object
-//            val data = Instances("Testing Data", numericAtt, 1000)
-//
-//            // Fill with data
-//            val vals = DoubleArray(data.numAttributes())
-//            vals[0] = r.toDouble()
-//            vals[1] = g.toDouble()
-//            vals[2] = b.toDouble()
-//            vals[3] = nominalAtt.indexOf("val3").toDouble()
-//
-//            // Add to instance
-//            data.add(DenseInstance(1.0, vals))
-//            if (data.classIndex() == -1) {
-//                data.setClassIndex(data.numAttributes() - 1)
-//            }
-//
-//            // Set class index for comparison testing
-//            data.setClassIndex(data.numAttributes() - 1)
-//
-//            // KNN Weka part
-//            if (modelAndHeader[0]?.size != 2) {
-//                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
-//            } else {
-//                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
-//                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
-//
-//                val value = knnmodel.classifyInstance(data.instance(0))
-//
-//                // Get the name of the class value
-//                prediction = m_modelHeader.classAttribute().value(value.toInt())
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//
-//        return prediction
-//    }
+        private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
+        val pointMatRgba = Mat()
+        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
+        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4)
+        return Scalar(pointMatRgba[0, 0])
+    }
 
-//    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
-//        var prediction: String? = null
-//        try {
-//            // Create list of attributes.
-//            val numericAtt = ArrayList<Attribute>()
-//            val nominalAtt = ArrayList<String>()
-//
-//            // Add numeric attributes/columns
-//            numericAtt.add(Attribute("R"))
-//            numericAtt.add(Attribute("G"))
-//            numericAtt.add(Attribute("B"))
-//
-//            // Add nominal/letters attributes/column
-//            nominalAtt.add("val3") // label for the nominal attribute
-//            numericAtt.add(Attribute("Color Names", nominalAtt))
-//
-//            // Create Instances object
-//            val data = Instances("Testing Data", numericAtt, 1000)
-//
-//            // Fill with data
-//            val vals = doubleArrayOf(r.toDouble(), g.toDouble(), b.toDouble(), nominalAtt.indexOf("val3").toDouble())
-//
-//            // Add to instance
-//            data.add(DenseInstance(1.0, vals))
-//            data.setClassIndex(data.numAttributes() - 1)
-//
-//            // KNN Weka part
-//            val modelAndHeaderElement = modelAndHeader[0]
-//            if (modelAndHeaderElement?.size != 2) {
-//                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
-//            } else {
-//                val knnmodel = modelAndHeaderElement[0] as Classifier
-//                val m_modelHeader = modelAndHeaderElement[1] as Instances
-//
-//                val value = knnmodel.classifyInstance(data.instance(0))
-//
-//                // Get the name of the class value
-//                prediction = m_modelHeader.classAttribute().value(value.toInt())
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//
-//        return prediction
-//    }
+    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
+        var prediction: String? = null
+        try {
+            // Create list of attributes.
+            val numericAtt = ArrayList<Attribute>()
+            val nominalAtt = ArrayList<String>()
+
+            // Add numeric attributes/columns
+            numericAtt.add(Attribute("R"))
+            numericAtt.add(Attribute("G"))
+            numericAtt.add(Attribute("B"))
+
+            // Add nominal/letters attributes/column
+            nominalAtt.add("val3") // label for att2-----------
+            numericAtt.add(Attribute("Color Names", nominalAtt))
+
+            // Create Instances object
+            val data = Instances("Testing Data", numericAtt, 1000)
+
+            // Fill with data
+            val vals = DoubleArray(data.numAttributes())
+            vals[0] = r.toDouble()
+            vals[1] = g.toDouble()
+            vals[2] = b.toDouble()
+            vals[3] = nominalAtt.indexOf("val3").toDouble()
+
+            // Add to instance
+            data.add(DenseInstance(1.0, vals))
+            if (data.classIndex() == -1) {
+                data.setClassIndex(data.numAttributes() - 1)
+            }
+
+            // Set class index for comparison testing
+            data.setClassIndex(data.numAttributes() - 1)
+
+            // KNN Weka part
+            if (modelAndHeader[0]?.size != 2) {
+                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
+            } else {
+                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
+                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
+
+                val value = knnmodel.classifyInstance(data.instance(0))
+
+                // Get the name of the class value
+                prediction = m_modelHeader.classAttribute().value(value.toInt())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return prediction
+    }
+    
+    private fun setViewBackgroundColor(view: View, color: Int, cornerRadius: Float) {
+        val gradientDrawable = GradientDrawable().apply {
+            setColor(color)
+            this.cornerRadius = cornerRadius
+        }
+        view.background = gradientDrawable
+    }
+
+
 
     override fun onResume() {
         super.onResume()
@@ -344,87 +312,6 @@ class MainActivity : CameraActivity() {
         }
     }
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-//        if (event != null) {
-//            x = event.x.toDouble()
-//            y = event.y.toDouble()
-//            touch_coordinates?.text = "X: $x, Y: $y"
-//            val cols = mRgba.cols()
-//            val rows = mRgba.rows()
-//            val xOffset = (camera.width - cols) / 2
-//            val yOffset = (camera.height - rows) / 2
-//            val x0 = (x - xOffset) * cols / camera.width
-//            val y0 = (y - yOffset) * rows / camera.height
-//            val point = mRgba.get(y0.toInt(), x0.toInt())
-//            val R = point[0]
-//            val G = point[1]
-//            val B = point[2]
-//            touch_color?.text = "R: $R, G: $G, B: $B"
-//        }
-        val cols = mRgba.cols()
-        val rows = mRgba.rows()
-
-        val yLow = cameraBridgeViewBase.height.toDouble() * 0.2401961
-        val yHigh = cameraBridgeViewBase.height.toDouble() * 0.7696078
-
-        val xScale = cols.toDouble() / cameraBridgeViewBase.width.toDouble()
-        val yScale = rows.toDouble() / (yHigh - yLow)
-
-        x = event.x.toDouble()
-        y = event.y.toDouble()
-
-        y = y - yLow
-
-        x = x * xScale
-        y = y * yScale
-
-        if (x < 0 || y < 0 || x > cols || y > rows) return false
-
-        binding.touchCoordinates.text = "X: " + java.lang.Double.valueOf(x) + ", Y: " + java.lang.Double.valueOf(y)
-
-        val touchedRect = Rect()
-
-        touchedRect.x = x.toInt()
-        touchedRect.y = y.toInt()
-
-        touchedRect.width = 8
-        touchedRect.height = 8
-
-        val touchedRegionRgba = mRgba.submat(touchedRect)
-
-        val touchedRegionHsv = Mat()
-        Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL)
-
-        mBlobColorHsv = Core.sumElems(touchedRegionHsv)
-        val pointCount = touchedRect.width * touchedRect.height
-        for (i in mBlobColorHsv.`val`.indices) mBlobColorHsv.`val`[i] /= pointCount.toDouble()
-        mBlobColorRgba = convertScalarHsv2Rgba(mBlobColorHsv);
-        binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
-        val colorResult = Color.rgb(
-            mBlobColorRgba.`val`[0].toInt(),
-            mBlobColorRgba.`val`[1].toInt(),
-            mBlobColorRgba.`val`[2].toInt()
-        )
-        binding.viewColor.setBackgroundColor(colorResult)
-        binding.colorHex.setTextColor(colorResult)
-        binding.cvSnapcolor.setCardBackgroundColor(colorResult)
-        binding.touchCoordinates.setTextColor(colorResult)
-        setViewBackgroundColor(binding.viewColor, colorResult, 100f)
-        return super.onTouchEvent(event)
-    }
-    private fun setViewBackgroundColor(view: View, color: Int, cornerRadius: Float) {
-        val gradientDrawable = GradientDrawable().apply {
-            setColor(color)
-            this.cornerRadius = cornerRadius
-        }
-        view.background = gradientDrawable
-    }
-    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
-        val pointMatRgba = Mat()
-        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
-        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4)
-        return Scalar(pointMatRgba[0, 0])
-    }
     override fun onDestroy() {
         super.onDestroy()
         cameraBridgeViewBase.disableView()

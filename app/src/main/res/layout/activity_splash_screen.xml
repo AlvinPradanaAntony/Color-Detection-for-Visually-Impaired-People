@@ -11,7 +11,7 @@
         android:id="@+id/pattern_splash"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:contentDescription="pattern_splash"
+        android:contentDescription="@string/pattern_splash"
         android:scaleType="centerCrop"
         android:src="@drawable/pattern2"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -23,7 +23,7 @@
         android:id="@+id/logo_app"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:contentDescription="logo_app"
+        android:contentDescription="@string/logo_app"
         android:scaleType="centerCrop"
         android:src="@drawable/icon_ro_app"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -35,7 +35,7 @@
         android:id="@+id/name_app"
         android:layout_width="92dp"
         android:layout_height="55dp"
-        android:contentDescription="name_app"
+        android:contentDescription="@string/name_app"
         android:src="@drawable/name_app" />
     
     <androidx.constraintlayout.widget.Guideline
