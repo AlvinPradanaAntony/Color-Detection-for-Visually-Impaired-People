@@ -25,6 +25,7 @@ import org.opencv.android.OpenCVLoader
 import org.opencv.core.Core
 import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.Point
 import org.opencv.core.Rect
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
@@ -60,12 +61,6 @@ class MainActivity : CameraActivity() {
     private var fh = 0
     var liveC: String? = null
 
-
-    private var x = -1.0
-    private var y = -1.0
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -74,7 +69,11 @@ class MainActivity : CameraActivity() {
         pointer = binding.pointer
         setupCamera()
         setupAction()
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             list.addAll(resolutionList())
         }
     }
@@ -103,34 +102,67 @@ class MainActivity : CameraActivity() {
                 mRgba = inputFrame.rgba()
                 mGray = inputFrame.gray()
 
-//                val corners = MatOfPoint()
-//                Imgproc.goodFeaturesToTrack(mGray, corners, 10, 0.5, 20.0, Mat(), 2, false)
-//                //Point[] cornersArr = corners.toArray();
-//                //Point[] cornersArr = corners.toArray();
+                // Koordinat layar View pointer
+                // Koordinat pointer dalam tampilan kamera
+                val pointerX = (pointer.x + pointer.width / 2).toInt()
+                val pointerY = (pointer.y + pointer.height / 2).toInt()
 
-//
-//                //convert mat rgb to mat hsv-----------------*/
-//                Imgproc.cvtColor(mRgba, mHsv, Imgproc.COLOR_RGB2HSV)
-//
-//                //find scalar sum of (array elements) hsv
-//                val mColorHsv = Core.sumElems(mHsv)
-//
-//                //int pointCount = 320*240; //9:12
-//                //int pointCount = 540*720; //more accurate
-//                val pointCount = 600 * 800 //4:3
-//
-//                //convert each pixel
-//                for (i in mColorHsv.`val`.indices) {
-//                    mColorHsv.`val`[i] /= pointCount.toDouble()
-//                }
-//
-//
-//                //convert hsv scalar to rgb scalar
-//                val mColorRgb: Scalar = convertScalarHsv2Rgba(mColorHsv)
-//                Log.d("intensity", "Color: #${String.format("%02X", mColorHsv.`val`[0].toInt())}${String.format("%02X", mColorHsv.`val`[1].toInt())}${String.format("%02X", mColorHsv.`val`[2].toInt())}")
-//
-//                // Log.d("intensity", "Color: #" + String.format("%02X", (int) mColorHsv.val[0])+ String.format("%02X", (int) mColorHsv.val[1])+ String.format("%02X", (int) mColorHsv.val[2]));
+                // Hitung skala antara tampilan kamera dan matriks
+                val scaleX = mRgba.cols().toDouble() / camera.width
+                val scaleY = mRgba.rows().toDouble() / camera.height
+
+                // Koordinat dalam matriks kamera
+                val centerX = (pointerX * scaleX).toInt().coerceIn(0, mRgba.cols() - 1)
+                val centerY = (pointerY * scaleY).toInt().coerceIn(0, mRgba.rows() - 1)
+                Log.w("Pointer", "Center X: $centerX, Center Y: $centerY")
+
+                val sizePointerWidth = pointer.width / 2
+                val sizePointerHeight = pointer.height / 2
+                val rectX = centerX - sizePointerWidth / 2
+                val rectY = centerY - sizePointerHeight / 2
+
+                val touchedRect = Rect(rectX, rectY, sizePointerWidth, sizePointerHeight)
+                val touchedRegionRgba = mRgba.submat(touchedRect)
+
+                val touchedRegionHsv = Mat()
+                Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL)
+
+                Imgproc.rectangle(mRgba, touchedRect, Scalar(255.0, 0.0, 0.0), 1)
+
+                mBlobColorHsv = Core.sumElems(touchedRegionHsv)
+                val pointCount = touchedRect.width * touchedRect.height
+                for (i in mBlobColorHsv.`val`.indices) mBlobColorHsv.`val`[i] /= pointCount.toDouble()
+                mBlobColorRgba = convertScalarHsv2Rgba(mBlobColorHsv)
+
+                val colorResult = Color.rgb(
+                    mBlobColorRgba.`val`[0].toInt(),
+                    mBlobColorRgba.`val`[1].toInt(),
+                    mBlobColorRgba.`val`[2].toInt()
+                )
+                var r = 0
+                var g = 0
+                var b = 0
                 //Get RGB Values
+                r = mBlobColorRgba.`val`[0].toInt()
+                g = mBlobColorRgba.`val`[1].toInt()
+                b = mBlobColorRgba.`val`[2].toInt()
+                val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
+                try {
+                    modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("u2_rgb_en_k-5.model"))
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+                liveC = knnProcess1(r, g, b, modelAndHeaderEN)
+                runOnUiThread {
+                    binding.colorName.text = liveC
+                    binding.touchCoordinates.text = "X: ${centerX.toDouble()}, Y: ${centerY.toDouble()}"
+                    binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
+                    binding.viewColor.setBackgroundColor(colorResult)
+                    binding.colorHex.setTextColor(colorResult)
+                    binding.cvSnapcolor.setCardBackgroundColor(colorResult)
+                    binding.touchCoordinates.setTextColor(colorResult)
+                    setViewBackgroundColor(binding.viewColor, colorResult, 100f)
+                }
 
                 return mRgba
             }
@@ -180,9 +212,9 @@ class MainActivity : CameraActivity() {
         }
     }
 
-    private fun resolutionList(): ArrayList<ListRes>{
+    private fun resolutionList(): ArrayList<ListRes> {
         try {
-            mCamera= Camera.open()
+            mCamera = Camera.open()
             val parameters = mCamera.parameters
             val sizes: List<Camera.Size> = parameters.supportedPreviewSizes
             val resolution_array_list = ArrayList<ListRes>()
@@ -220,7 +252,11 @@ class MainActivity : CameraActivity() {
                 camera.disableView()
                 camera.setMaxFrameSize(frameWidth, frameHeight)
                 camera.enableView()
-                Toast.makeText(this@MainActivity, "$resolution, Width: $frameWidth, Height: $frameHeight", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    "$resolution, Width: $frameWidth, Height: $frameHeight",
+                    Toast.LENGTH_SHORT
+                ).show()
                 dialog.dismiss()
             }
         })
@@ -233,7 +269,7 @@ class MainActivity : CameraActivity() {
 //        return Scalar(pointMatRgba[0, 0])
 //    }
 
-        private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
+    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
         val pointMatRgba = Mat()
         val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
         Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4)
@@ -293,7 +329,7 @@ class MainActivity : CameraActivity() {
 
         return prediction
     }
-    
+
     private fun setViewBackgroundColor(view: View, color: Int, cornerRadius: Float) {
         val gradientDrawable = GradientDrawable().apply {
             setColor(color)
@@ -302,13 +338,12 @@ class MainActivity : CameraActivity() {
         view.background = gradientDrawable
     }
 
-
-
     override fun onResume() {
         super.onResume()
         cameraBridgeViewBase.enableView()
         if (!OpenCVLoader.initDebug()) {
-            Toast.makeText(applicationContext, "There is a problem in opencv", Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext, "There is a problem in opencv", Toast.LENGTH_LONG)
+                .show()
         }
     }
 
@@ -327,14 +362,22 @@ class MainActivity : CameraActivity() {
     }
 
     private fun getPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, 101)
-        } else{
+        } else {
             list.addAll(resolutionList())
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
