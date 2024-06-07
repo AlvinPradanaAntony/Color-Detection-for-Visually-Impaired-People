@@ -8,6 +8,8 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.hardware.Camera
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import android.speech.tts.Voice
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -35,6 +37,7 @@ import weka.core.DenseInstance
 import weka.core.Instances
 import weka.core.SerializationHelper
 import java.util.Collections
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -46,6 +49,7 @@ class MainActivity : CameraActivity() {
     private lateinit var rvList: RecyclerView
     private lateinit var alertDialog: AlertDialog.Builder
     private lateinit var dialog: AlertDialog
+    private lateinit var textToSpeech: TextToSpeech
     private lateinit var mCamera: Camera
     private lateinit var mRgba: Mat
     private lateinit var mGray: Mat
@@ -66,6 +70,7 @@ class MainActivity : CameraActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
+        setupTextToSpeech()
         pointer = binding.pointer
         setupCamera()
         setupAction()
@@ -116,8 +121,8 @@ class MainActivity : CameraActivity() {
                 val centerY = (pointerY * scaleY).toInt().coerceIn(0, mRgba.rows() - 1)
                 Log.w("Pointer", "Center X: $centerX, Center Y: $centerY")
 
-                val sizePointerWidth = pointer.width / 2
-                val sizePointerHeight = pointer.height / 2
+                val sizePointerWidth = 8
+                val sizePointerHeight = 8
                 val rectX = centerX - sizePointerWidth / 2
                 val rectY = centerY - sizePointerHeight / 2
 
@@ -127,7 +132,7 @@ class MainActivity : CameraActivity() {
                 val touchedRegionHsv = Mat()
                 Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL)
 
-                Imgproc.rectangle(mRgba, touchedRect, Scalar(255.0, 0.0, 0.0), 1)
+//                Imgproc.rectangle(mRgba, touchedRect, Scalar(255.0, 0.0, 0.0), 1)
 
                 mBlobColorHsv = Core.sumElems(touchedRegionHsv)
                 val pointCount = touchedRect.width * touchedRect.height
@@ -154,13 +159,12 @@ class MainActivity : CameraActivity() {
                 }
                 liveC = knnProcess1(r, g, b, modelAndHeaderEN)
                 runOnUiThread {
+//                    playVoiceOver(liveC.toString())
                     binding.colorName.text = liveC
-                    binding.touchCoordinates.text = "X: ${centerX.toDouble()}, Y: ${centerY.toDouble()}"
                     binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
                     binding.viewColor.setBackgroundColor(colorResult)
                     binding.colorHex.setTextColor(colorResult)
                     binding.cvSnapcolor.setCardBackgroundColor(colorResult)
-                    binding.touchCoordinates.setTextColor(colorResult)
                     setViewBackgroundColor(binding.viewColor, colorResult, 100f)
                 }
 
@@ -212,6 +216,38 @@ class MainActivity : CameraActivity() {
         }
     }
 
+    private fun setupTextToSpeech() {
+        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener {
+            if (it == TextToSpeech.SUCCESS) {
+                val result = textToSpeech.setLanguage(Locale("in", "ID"))
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Toast.makeText(this, "Bahasa tidak didukung", Toast.LENGTH_SHORT).show()
+                } else {
+                    textToSpeech.setSpeechRate(1.15f)
+                    val voiceMale = Voice("id-id-x-ide-network", Locale("in", "ID"), Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
+                    val voiceFemale = Voice("id-id-x-idc-network", Locale("in", "ID"), Voice.QUALITY_HIGH, Voice.LATENCY_LOW, true, null)
+                    textToSpeech.voice = voiceMale
+//                    textToSpeech.setPitch(1.16f) // Female
+                    textToSpeech.setPitch(0.9f) // Male
+                }
+            } else {
+                Toast.makeText(this, "Inisialisasi TTS Gagal", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun playVoiceOver(message: String) {
+        Log.d("TTS", "Speaking: $message")
+        try {
+            textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, null)
+            Log.d("TTS", "Success")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("TTS", "Error: ${e.message}")
+        }
+
+    }
+
     private fun resolutionList(): ArrayList<ListRes> {
         try {
             mCamera = Camera.open()
@@ -261,13 +297,6 @@ class MainActivity : CameraActivity() {
             }
         })
     }
-
-//    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
-//        val pointMatRgba = Mat()
-//        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
-//        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB)
-//        return Scalar(pointMatRgba[0, 0])
-//    }
 
     private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
         val pointMatRgba = Mat()
@@ -350,6 +379,8 @@ class MainActivity : CameraActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraBridgeViewBase.disableView()
+        textToSpeech.stop()
+        textToSpeech.shutdown()
     }
 
     override fun onPause() {

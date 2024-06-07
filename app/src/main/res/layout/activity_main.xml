@@ -53,17 +53,6 @@
     
     </com.google.android.material.appbar.AppBarLayout>
     
-    <TextView
-        android:id="@+id/touch_coordinates"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
-        android:text="@string/coordinate_text"
-        android:textColor="@color/tail_green"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
-    
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_snapcolor"
         android:layout_width="45dp"
@@ -106,7 +95,8 @@
             android:clickable="true"
             android:contentDescription="@string/flash"
             android:focusable="true"
-            android:src="@drawable/ic_flash_off" />
+            android:src="@drawable/ic_flash_off"
+            android:tooltipText="Flash Kamera" />
     </androidx.cardview.widget.CardView>
     
     <androidx.cardview.widget.CardView
@@ -134,7 +124,8 @@
             android:clickable="true"
             android:contentDescription="@string/resolution"
             android:focusable="true"
-            android:src="@drawable/ic_ratio" />
+            android:src="@drawable/ic_ratio"
+            android:tooltipText="Resolusi Kamera" />
     </androidx.cardview.widget.CardView>
     
     <androidx.cardview.widget.CardView
