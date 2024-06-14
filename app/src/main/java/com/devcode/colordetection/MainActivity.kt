@@ -8,6 +8,8 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.hardware.Camera
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
 import android.util.Log
@@ -63,7 +65,18 @@ class MainActivity : CameraActivity() {
     private var isFlashOn = false
     private var fw = 0
     private var fh = 0
-    var liveC: String? = null
+    private var liveC: String? = null
+    private var lastVoiceOverTime: Long = 0
+    private var previousLiveC: String? = null
+
+    // Handler dan Runnable untuk eksekusi periodik
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateRunnable = object : Runnable {
+        override fun run() {
+            updateColorDetection()
+            handler.postDelayed(this, 1000) // Eksekusi ulang setiap 1 detik
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,35 +151,6 @@ class MainActivity : CameraActivity() {
                 val pointCount = touchedRect.width * touchedRect.height
                 for (i in mBlobColorHsv.`val`.indices) mBlobColorHsv.`val`[i] /= pointCount.toDouble()
                 mBlobColorRgba = convertScalarHsv2Rgba(mBlobColorHsv)
-
-                val colorResult = Color.rgb(
-                    mBlobColorRgba.`val`[0].toInt(),
-                    mBlobColorRgba.`val`[1].toInt(),
-                    mBlobColorRgba.`val`[2].toInt()
-                )
-                var r = 0
-                var g = 0
-                var b = 0
-                //Get RGB Values
-                r = mBlobColorRgba.`val`[0].toInt()
-                g = mBlobColorRgba.`val`[1].toInt()
-                b = mBlobColorRgba.`val`[2].toInt()
-                val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
-                try {
-                    modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("u2_rgb_en_k-5.model"))
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
-                }
-                liveC = knnProcess1(r, g, b, modelAndHeaderEN)
-                runOnUiThread {
-//                    playVoiceOver(liveC.toString())
-                    binding.colorName.text = liveC
-                    binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
-                    binding.viewColor.setBackgroundColor(colorResult)
-                    binding.colorHex.setTextColor(colorResult)
-                    binding.cvSnapcolor.setCardBackgroundColor(colorResult)
-                    setViewBackgroundColor(binding.viewColor, colorResult, 100f)
-                }
 
                 return mRgba
             }
@@ -370,6 +354,7 @@ class MainActivity : CameraActivity() {
     override fun onResume() {
         super.onResume()
         cameraBridgeViewBase.enableView()
+        handler.post(updateRunnable)
         if (!OpenCVLoader.initDebug()) {
             Toast.makeText(applicationContext, "There is a problem in opencv", Toast.LENGTH_LONG)
                 .show()
@@ -381,11 +366,50 @@ class MainActivity : CameraActivity() {
         cameraBridgeViewBase.disableView()
         textToSpeech.stop()
         textToSpeech.shutdown()
+        handler.removeCallbacks(updateRunnable)
     }
 
     override fun onPause() {
         super.onPause()
         cameraBridgeViewBase.disableView()
+        handler.removeCallbacks(updateRunnable)
+    }
+
+    private fun updateColorDetection() {
+        val colorResult = Color.rgb(
+            mBlobColorRgba.`val`[0].toInt(),
+            mBlobColorRgba.`val`[1].toInt(),
+            mBlobColorRgba.`val`[2].toInt()
+        )
+        var r = 0
+        var g = 0
+        var b = 0
+        //Get RGB Values
+        r = mBlobColorRgba.`val`[0].toInt()
+        g = mBlobColorRgba.`val`[1].toInt()
+        b = mBlobColorRgba.`val`[2].toInt()
+        val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
+        try {
+            modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("u2_rgb_en_k-5.model"))
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        liveC = knnProcess1(r, g, b, modelAndHeaderEN)
+// Cek waktu pemanggilan terakhir dari playVoiceOver dan perubahan pada liveC
+        val currentTime = System.currentTimeMillis()
+        val shouldSpeak = currentTime - lastVoiceOverTime >= 3000 || liveC != previousLiveC
+
+        if (shouldSpeak) {
+            playVoiceOver(liveC.toString())
+            lastVoiceOverTime = currentTime // Update waktu pemanggilan terakhir
+            previousLiveC = liveC // Update nilai liveC sebelumnya
+        }
+        binding.colorName.text = liveC
+        binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
+        binding.viewColor.setBackgroundColor(colorResult)
+        binding.colorHex.setTextColor(colorResult)
+        binding.cvSnapcolor.setCardBackgroundColor(colorResult)
+        setViewBackgroundColor(binding.viewColor, colorResult, 100f)
     }
 
     override fun getCameraViewList(): MutableList<out CameraBridgeViewBase> {

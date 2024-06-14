@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -82,6 +83,9 @@ class OnboardingActivity : AppCompatActivity() {
     private fun setupTextToSpeech() {
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener {
             if (it == TextToSpeech.SUCCESS) {
+                for (voice in textToSpeech.voices) {
+                    Log.d("TTS", voice.name)
+                }
                 val result = textToSpeech.setLanguage(Locale("in", "ID"))
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     Toast.makeText(this, "Bahasa tidak didukung", Toast.LENGTH_SHORT).show()
