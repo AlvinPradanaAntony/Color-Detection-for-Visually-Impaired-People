@@ -74,7 +74,7 @@ class MainActivity : CameraActivity() {
     private val updateRunnable = object : Runnable {
         override fun run() {
             updateColorDetection()
-            handler.postDelayed(this, 1000) // Eksekusi ulang setiap 1 detik
+            handler.postDelayed(this, 800) // Eksekusi ulang setiap 1 detik
         }
     }
 
@@ -107,8 +107,8 @@ class MainActivity : CameraActivity() {
                 mHsv = Mat(width, height, CvType.CV_8UC3)
                 mRgbaT = Mat(height, width, CvType.CV_8UC4)
                 mRgbaF = Mat(fh, fw, CvType.CV_8UC4)
-                mBlobColorRgba = Scalar(255.0);
-                mBlobColorHsv = Scalar(255.0);
+                mBlobColorRgba = Scalar(0.0);
+                mBlobColorHsv = Scalar(0.0);
                 Log.w("Camera View Size", "Width: $width, Height: $height")
             }
 
@@ -158,7 +158,8 @@ class MainActivity : CameraActivity() {
         val message = if (OpenCVLoader.initLocal()) {
             cameraBridgeViewBase.enableView(); "OpenCV loaded"
         } else "OpenCV not loaded"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Log.w("OpenCV", message)
     }
 
     private fun setupAction() {
@@ -218,6 +219,104 @@ class MainActivity : CameraActivity() {
                 Toast.makeText(this, "Inisialisasi TTS Gagal", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun updateColorDetection() {
+        val colorResult = Color.rgb(
+            mBlobColorRgba.`val`[0].toInt(),
+            mBlobColorRgba.`val`[1].toInt(),
+            mBlobColorRgba.`val`[2].toInt()
+        )
+        var r = 0
+        var g = 0
+        var b = 0
+        //Get RGB Values
+        r = mBlobColorRgba.`val`[0].toInt()
+        g = mBlobColorRgba.`val`[1].toInt()
+        b = mBlobColorRgba.`val`[2].toInt()
+        val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
+        try {
+            modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("model_knn_rgb_id_k1.model"))
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        liveC = knnProcess1(r, g, b, modelAndHeaderEN)
+        // Cek waktu pemanggilan terakhir dari playVoiceOver dan perubahan pada liveC
+        val currentTime = System.currentTimeMillis()
+        val shouldSpeak = currentTime - lastVoiceOverTime >= 2500 || liveC != previousLiveC
+
+        if (shouldSpeak) {
+            playVoiceOver(liveC.toString())
+            lastVoiceOverTime = currentTime // Update waktu pemanggilan terakhir
+            previousLiveC = liveC // Update nilai liveC sebelumnya
+        }
+        binding.colorName.text = liveC
+        binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
+        binding.viewColor.setBackgroundColor(colorResult)
+        binding.colorHex.setTextColor(colorResult)
+        binding.cvSnapcolor.setCardBackgroundColor(colorResult)
+        setViewBackgroundColor(binding.viewColor, colorResult, 100f)
+    }
+
+    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
+        val pointMatRgba = Mat()
+        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
+        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4)
+        return Scalar(pointMatRgba[0, 0])
+    }
+
+    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
+        var prediction: String? = null
+        try {
+            // Create list of attributes.
+            val numericAtt = ArrayList<Attribute>()
+            val nominalAtt = ArrayList<String>()
+
+            // Add numeric attributes/columns
+            numericAtt.add(Attribute("R"))
+            numericAtt.add(Attribute("G"))
+            numericAtt.add(Attribute("B"))
+
+            // Add nominal/letters attributes/column
+            nominalAtt.add("val3") // label for att2-----------
+            numericAtt.add(Attribute("Color Names", nominalAtt))
+
+            // Create Instances object
+            val data = Instances("Testing Data", numericAtt, 1000)
+
+            // Fill with data
+            val vals = DoubleArray(data.numAttributes())
+            vals[0] = r.toDouble()
+            vals[1] = g.toDouble()
+            vals[2] = b.toDouble()
+            vals[3] = nominalAtt.indexOf("val3").toDouble()
+
+            // Add to instance
+            data.add(DenseInstance(1.0, vals))
+            if (data.classIndex() == -1) {
+                data.setClassIndex(data.numAttributes() - 1)
+            }
+
+            // Set class index for comparison testing
+            data.setClassIndex(data.numAttributes() - 1)
+
+            // KNN Weka part
+            if (modelAndHeader[0]?.size != 2) {
+                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
+            } else {
+                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
+                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
+
+                val value = knnmodel.classifyInstance(data.instance(0))
+
+                // Get the name of the class value
+                prediction = m_modelHeader.classAttribute().value(value.toInt())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return prediction
     }
 
     private fun playVoiceOver(message: String) {
@@ -282,67 +381,6 @@ class MainActivity : CameraActivity() {
         })
     }
 
-    private fun convertScalarHsv2Rgba(hsvColor: Scalar): Scalar {
-        val pointMatRgba = Mat()
-        val pointMatHsv = Mat(1, 1, CvType.CV_8UC3, hsvColor)
-        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4)
-        return Scalar(pointMatRgba[0, 0])
-    }
-
-    private fun knnProcess1(r: Int, g: Int, b: Int, modelAndHeader: Array<Array<Any>?>): String? {
-        var prediction: String? = null
-        try {
-            // Create list of attributes.
-            val numericAtt = ArrayList<Attribute>()
-            val nominalAtt = ArrayList<String>()
-
-            // Add numeric attributes/columns
-            numericAtt.add(Attribute("R"))
-            numericAtt.add(Attribute("G"))
-            numericAtt.add(Attribute("B"))
-
-            // Add nominal/letters attributes/column
-            nominalAtt.add("val3") // label for att2-----------
-            numericAtt.add(Attribute("Color Names", nominalAtt))
-
-            // Create Instances object
-            val data = Instances("Testing Data", numericAtt, 1000)
-
-            // Fill with data
-            val vals = DoubleArray(data.numAttributes())
-            vals[0] = r.toDouble()
-            vals[1] = g.toDouble()
-            vals[2] = b.toDouble()
-            vals[3] = nominalAtt.indexOf("val3").toDouble()
-
-            // Add to instance
-            data.add(DenseInstance(1.0, vals))
-            if (data.classIndex() == -1) {
-                data.setClassIndex(data.numAttributes() - 1)
-            }
-
-            // Set class index for comparison testing
-            data.setClassIndex(data.numAttributes() - 1)
-
-            // KNN Weka part
-            if (modelAndHeader[0]?.size != 2) {
-                throw Exception("[InputMappedClassifier] serialized model file does not seem to contain both a model and the instances header used in training it!")
-            } else {
-                val knnmodel = modelAndHeader[0]?.get(0) as Classifier
-                val m_modelHeader = modelAndHeader[0]?.get(1) as Instances
-
-                val value = knnmodel.classifyInstance(data.instance(0))
-
-                // Get the name of the class value
-                prediction = m_modelHeader.classAttribute().value(value.toInt())
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        return prediction
-    }
-
     private fun setViewBackgroundColor(view: View, color: Int, cornerRadius: Float) {
         val gradientDrawable = GradientDrawable().apply {
             setColor(color)
@@ -356,8 +394,7 @@ class MainActivity : CameraActivity() {
         cameraBridgeViewBase.enableView()
         handler.post(updateRunnable)
         if (!OpenCVLoader.initDebug()) {
-            Toast.makeText(applicationContext, "There is a problem in opencv", Toast.LENGTH_LONG)
-                .show()
+            Toast.makeText(applicationContext, "There is a problem in opencv", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -373,43 +410,6 @@ class MainActivity : CameraActivity() {
         super.onPause()
         cameraBridgeViewBase.disableView()
         handler.removeCallbacks(updateRunnable)
-    }
-
-    private fun updateColorDetection() {
-        val colorResult = Color.rgb(
-            mBlobColorRgba.`val`[0].toInt(),
-            mBlobColorRgba.`val`[1].toInt(),
-            mBlobColorRgba.`val`[2].toInt()
-        )
-        var r = 0
-        var g = 0
-        var b = 0
-        //Get RGB Values
-        r = mBlobColorRgba.`val`[0].toInt()
-        g = mBlobColorRgba.`val`[1].toInt()
-        b = mBlobColorRgba.`val`[2].toInt()
-        val modelAndHeaderEN = arrayOf<Array<Any>?>(null)
-        try {
-            modelAndHeaderEN[0] = SerializationHelper.readAll(assets.open("u2_rgb_en_k-5.model"))
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-        liveC = knnProcess1(r, g, b, modelAndHeaderEN)
-// Cek waktu pemanggilan terakhir dari playVoiceOver dan perubahan pada liveC
-        val currentTime = System.currentTimeMillis()
-        val shouldSpeak = currentTime - lastVoiceOverTime >= 3000 || liveC != previousLiveC
-
-        if (shouldSpeak) {
-            playVoiceOver(liveC.toString())
-            lastVoiceOverTime = currentTime // Update waktu pemanggilan terakhir
-            previousLiveC = liveC // Update nilai liveC sebelumnya
-        }
-        binding.colorName.text = liveC
-        binding.colorHex.text = "Color: #" + String.format("%02X", mBlobColorRgba.`val`[0].toInt()) + String.format("%02X", mBlobColorRgba.`val`[1].toInt()) + String.format("%02X", mBlobColorRgba.`val`[2].toInt())
-        binding.viewColor.setBackgroundColor(colorResult)
-        binding.colorHex.setTextColor(colorResult)
-        binding.cvSnapcolor.setCardBackgroundColor(colorResult)
-        setViewBackgroundColor(binding.viewColor, colorResult, 100f)
     }
 
     override fun getCameraViewList(): MutableList<out CameraBridgeViewBase> {
